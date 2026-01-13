@@ -193,7 +193,10 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
-                      BiodataDetailPage(biodataId: biodata.id),
+                      BiodataDetailPage(
+                        biodataId: biodata.id,
+                        biodataNumber: '${biodata.userIdNumber ?? biodata.userId}',
+                      ),
                   transitionsBuilder:
                       (context, animation, secondaryAnimation, child) {
                     const begin = Offset(1.0, 0.0);
@@ -234,7 +237,10 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
                   context,
                   PageRouteBuilder(
                     pageBuilder: (context, animation, secondaryAnimation) =>
-                        BiodataDetailPage(biodataId: biodata.id),
+                        BiodataDetailPage(
+                          biodataId: biodata.id,
+                          biodataNumber: '${biodata.userIdNumber ?? biodata.userId}',
+                        ),
                     transitionsBuilder:
                         (context, animation, secondaryAnimation, child) {
                       const begin = Offset(1.0, 0.0);

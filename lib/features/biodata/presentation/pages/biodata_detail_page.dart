@@ -8,10 +8,12 @@ import '../../domain/entities/biodata_entity.dart';
 
 class BiodataDetailPage extends ConsumerStatefulWidget {
   final String biodataId;
+  final String biodataNumber;
   
   const BiodataDetailPage({
     super.key,
     required this.biodataId,
+    required this.biodataNumber,
   });
   
   @override
@@ -45,7 +47,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
   
   String _getBiodataNumber(BiodataEntity biodata) {
     final prefix = biodata.gender == 'মহিলা' ? 'PNCF-' : 'PNCM-';
-    return '$prefix${biodata.userId}';
+    return '$prefix${widget.biodataNumber}';
   }
   
   @override
@@ -140,31 +142,41 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                     ),
                     const SizedBox(height: 16),
                     // Biodata Number
-                    Text(
-                      _getBiodataNumber(biodata),
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        _getBiodataNumber(biodata),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     const SizedBox(height: 8),
                     // Age and Type
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildHeaderChip(
-                          '${_calculateAge(biodata.dateOfBirth)} বছর',
-                          Icons.cake,
-                        ),
-                        const SizedBox(width: 12),
-                        _buildHeaderChip(
-                          biodata.bioType,
-                          biodata.gender == 'মহিলা'
-                              ? Icons.female
-                              : Icons.male,
-                        ),
-                      ],
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 12,
+                        runSpacing: 8,
+                        children: [
+                          _buildHeaderChip(
+                            '${_calculateAge(biodata.dateOfBirth)} বছর',
+                            Icons.cake,
+                          ),
+                          _buildHeaderChip(
+                            biodata.bioType,
+                            biodata.gender == 'মহিলা'
+                                ? Icons.female
+                                : Icons.male,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -533,12 +545,11 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
             flex: 2,
             child: Text(
               label,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
+              overflow: TextOverflow.visible,
+              softWrap: true,
             ),
           ),
+          const SizedBox(width: 8),
           Expanded(
             flex: 3,
             child: Text(
@@ -546,6 +557,8 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
               ),
+              overflow: TextOverflow.visible,
+              softWrap: true,
             ),
           ),
         ],
@@ -588,7 +601,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
 
   Widget _buildHeaderChip(String text, IconData icon) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(20),
@@ -599,12 +612,16 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
         children: [
           Icon(icon, size: 16, color: Colors.white),
           const SizedBox(width: 6),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
+          Flexible(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
         ],
