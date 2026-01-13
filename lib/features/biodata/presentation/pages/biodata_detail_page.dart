@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/extensions.dart';
@@ -67,14 +68,14 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
+              Icon(Icons.error_outline, size: 64.sp, color: Colors.red),
+              SizedBox(height: 16.h),
               Text(
                 message,
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.red),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text('ফিরে যান'),
@@ -91,7 +92,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
       slivers: [
         // App Bar with Profile Header
         SliverAppBar(
-          expandedHeight: 250,
+          expandedHeight: 250.h,
           pinned: true,
           backgroundColor: biodata.gender == 'মহিলা'
               ? const Color(0xFFC2185B)
@@ -111,11 +112,11 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 60),
+                    SizedBox(height: 60.h),
                     // Avatar
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: 100.w,
+                      // height: 100.h,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
@@ -133,21 +134,21 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                           biodata.gender == 'মহিলা'
                               ? Icons.female
                               : Icons.male,
-                          size: 50,
+                          size: 50.sp,
                           color: biodata.gender == 'মহিলা'
                               ? const Color(0xFFC2185B)
                               : const Color(0xFF1976D2),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     // Biodata Number
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                       child: Text(
                         _getBiodataNumber(biodata),
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: TextStyle(
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -156,14 +157,15 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                         maxLines: 1,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8.h),
+          
                     // Age and Type
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w),
                       child: Wrap(
                         alignment: WrapAlignment.center,
-                        spacing: 12,
-                        runSpacing: 8,
+                        spacing: 12.w,
+                        runSpacing: 8.h,
                         children: [
                           _buildHeaderChip(
                             '${_calculateAge(biodata.dateOfBirth)} বছর',
@@ -199,27 +201,33 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
             children: [
               // Stats Card
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.w),
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16.w),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildStatItem(
-                          Icons.visibility,
-                          '${biodata.viewsCount ?? 0}',
-                          'Views',
+                        Expanded(
+                          child: _buildStatItem(
+                            Icons.visibility,
+                            '${biodata.viewsCount ?? 0}',
+                            'Views',
+                          ),
                         ),
-                        _buildStatItem(
-                          Icons.favorite,
-                          '${biodata.likesCount ?? 0}',
-                          'Likes',
+                        Expanded(
+                          child: _buildStatItem(
+                            Icons.favorite,
+                            '${biodata.likesCount ?? 0}',
+                            'Likes',
+                          ),
                         ),
-                        _buildStatItem(
-                          Icons.shopping_cart,
-                          '${biodata.purchasesCount ?? 0}',
-                          'Purchased',
+                        Expanded(
+                          child: _buildStatItem(
+                            Icons.shopping_cart,
+                            '${biodata.purchasesCount ?? 0}',
+                            'Purchased',
+                          ),
                         ),
                       ],
                     ),
@@ -460,7 +468,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
               
               // Contact Button
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16.w),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -470,7 +478,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                     icon: const Icon(Icons.phone),
                     label: const Text('যোগাযোগের তথ্য দেখুন'),
                     style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16.w),
                       backgroundColor: AppTheme.primaryColor,
                       foregroundColor: Colors.white,
                     ),
@@ -478,7 +486,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                 ),
               ),
               
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
             ],
           ),
         ),
@@ -488,22 +496,27 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
   
   Widget _buildStatItem(IconData icon, String value, String label) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: AppTheme.primaryColor),
-        const SizedBox(height: 8),
+        Icon(icon, color: AppTheme.primaryColor, size: 24.sp),
+        SizedBox(height: 8.h),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 20,
+          style: TextStyle(
+            fontSize: 20.sp,
             fontWeight: FontWeight.bold,
           ),
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
         ),
         Text(
           label,
           style: TextStyle(
             color: Colors.grey[600],
-            fontSize: 12,
+            fontSize: 12.sp,
           ),
+          textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
@@ -511,17 +524,17 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
   
   Widget _buildSection(String title, List<Widget> children) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       child: Card(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.w),
               child: Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.primaryColor,
                 ),
@@ -537,7 +550,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
   
   Widget _buildInfoTile(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -549,7 +562,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
               softWrap: true,
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8.w),
           Expanded(
             flex: 3,
             child: Text(
@@ -601,24 +614,24 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
 
   Widget _buildHeaderChip(String text, IconData icon) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: Colors.white.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: Colors.white),
-          const SizedBox(width: 6),
+          Icon(icon, size: 16.sp, color: Colors.white),
+          SizedBox(width: 6.w),
           Flexible(
             child: Text(
               text,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
-                fontSize: 13,
+                fontSize: 13.sp,
               ),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
