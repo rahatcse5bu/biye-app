@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/extensions.dart';
 import '../providers/biodata_provider.dart';
-import '../providers/biodata_state.dart';
 import '../widgets/biodata_card.dart';
 import '../widgets/biodata_shimmer.dart';
+import '../widgets/biodata_filter_dialog.dart';
 import 'biodata_detail_page.dart';
+import '../../domain/entities/biodata_entity.dart';
 
 class BiodataListPage extends ConsumerStatefulWidget {
   const BiodataListPage({super.key});
@@ -16,6 +17,7 @@ class BiodataListPage extends ConsumerStatefulWidget {
 
 class _BiodataListPageState extends ConsumerState<BiodataListPage> {
   bool _isGridView = true;
+  Map<String, dynamic> _activeFilters = {};
   
   @override
   void initState() {
@@ -42,11 +44,35 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
               });
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {
-              _showFilterDialog(context);
-            },
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.filter_list),
+                onPressed: () {
+                  _showFilterDialog(context);
+                },
+              ),
+              if (_activeFilters.isNotEmpty)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${_activeFilters.length}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -54,7 +80,10 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
         initial: () => BiodataShimmer(isGridView: _isGridView),
         loading: () => BiodataShimmer(isGridView: _isGridView),
         loaded: (biodatas) {
-          if (biodatas.isEmpty) {
+          // Apply filters
+          final filteredBiodatas = _applyFilters(biodatas);
+          
+          if (filteredBiodatas.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -66,21 +95,38 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'কোনো বায়োডাটা পাওয়া যায়নি',
+                    _activeFilters.isEmpty 
+                        ? 'কোনো বায়োডাটা পাওয়া যায়নি'
+                        : 'ফিল্টার অনুযায়ী কোনো বায়োডাটা পাওয়া যায়নি',
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.grey[600],
                       fontWeight: FontWeight.w500,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'নতুন বায়োডাটা শীঘ্রই যুক্ত হবে',
+                    _activeFilters.isEmpty
+                        ? 'নতুন বায়োডাটা শীঘ্রই যুক্ত হবে'
+                        : 'ফিল্টার পরিবর্তন করে আবার চেষ্টা করুন',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[500],
                     ),
+                    textAlign: TextAlign.center,
                   ),
+                  if (_activeFilters.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _activeFilters.clear();
+                        });
+                      },
+                      child: const Text('ফিল্টার রিসেট করুন'),
+                    ),
+                  ],
                 ],
               ),
             );
@@ -91,8 +137,8 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
               ref.read(biodataListNotifierProvider.notifier).loadBiodatas();
             },
             child: _isGridView
-                ? _buildGridView(biodatas)
-                : _buildListView(biodatas),
+                ? _buildGridView(filteredBiodatas)
+                : _buildListView(filteredBiodatas),
           );
         },
         error: (message) => Center(
@@ -166,7 +212,7 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
   
   Widget _buildGridView(biodatas) {
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: context.screenWidth > 1200
             ? 4
@@ -176,8 +222,8 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
                     ? 2
                     : 1,
         childAspectRatio: 0.65,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
       ),
       itemCount: biodatas.length,
       itemBuilder: (context, index) {
@@ -220,7 +266,7 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
   
   Widget _buildListView(biodatas) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       itemCount: biodatas.length,
       itemBuilder: (context, index) {
         final biodata = biodatas[index];
@@ -229,7 +275,7 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
           duration: Duration(milliseconds: 200 + (index * 50)),
           curve: Curves.easeOut,
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.only(bottom: 12),
             child: BiodataCard(
               biodata: biodata,
               onTap: () {
@@ -266,30 +312,74 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
   void _showFilterDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('ফিল্টার'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('ফিল্টার অপশন শীঘ্রই আসছে...'),
-            const SizedBox(height: 16),
-            // Add filter options here
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('বন্ধ করুন'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Apply filters
-            },
-            child: const Text('প্রয়োগ করুন'),
-          ),
-        ],
+      builder: (context) => BiodataFilterDialog(
+        currentFilters: _activeFilters,
+        onApplyFilters: (filters) {
+          setState(() {
+            _activeFilters = filters;
+          });
+        },
       ),
     );
+  }
+
+  List<BiodataEntity> _applyFilters(List<BiodataEntity> biodatas) {
+    if (_activeFilters.isEmpty) return biodatas;
+
+    return biodatas.where((biodata) {
+      // Gender filter
+      if (_activeFilters['gender'] != null) {
+        if (biodata.gender != _activeFilters['gender']) return false;
+      }
+
+      // Biodata Type filter
+      if (_activeFilters['bioType'] != null) {
+        if (biodata.bioType != _activeFilters['bioType']) return false;
+      }
+
+      // Marital Status filter
+      if (_activeFilters['maritalStatus'] != null) {
+        if (biodata.maritalStatus != _activeFilters['maritalStatus']) return false;
+      }
+
+      // Age Range filter
+      if (_activeFilters['minAge'] != null || _activeFilters['maxAge'] != null) {
+        final age = _calculateAge(biodata.dateOfBirth);
+        if (_activeFilters['minAge'] != null && age < _activeFilters['minAge']) {
+          return false;
+        }
+        if (_activeFilters['maxAge'] != null && age > _activeFilters['maxAge']) {
+          return false;
+        }
+      }
+
+      // Division filter
+      if (_activeFilters['division'] != null) {
+        if (biodata.address?.division != _activeFilters['division'] &&
+            biodata.address?.presentDivision != _activeFilters['division']) {
+          return false;
+        }
+      }
+
+      // Education filter (check if highest level contains the filter value)
+      if (_activeFilters['education'] != null) {
+        final educationLevel = biodata.educationQualification?.highestEduLevel ?? '';
+        if (!educationLevel.contains(_activeFilters['education'])) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
+  }
+
+  int _calculateAge(DateTime birthDate) {
+    final today = DateTime.now();
+    int age = today.year - birthDate.year;
+    if (today.month < birthDate.month ||
+        (today.month == birthDate.month && today.day < birthDate.day)) {
+      age--;
+    }
+    return age;
   }
 }

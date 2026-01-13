@@ -55,7 +55,7 @@ class BiodataCard extends StatelessWidget {
           children: [
             // Header with gradient and avatar
             Container(
-              height: 140,
+              height: 100,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: biodata.gender == 'মহিলা'
@@ -72,29 +72,37 @@ class BiodataCard extends StatelessWidget {
                 children: [
                   // Gender Icon
                   Center(
-                    child: Column(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           biodata.gender == 'মহিলা'
                               ? Icons.female
                               : Icons.male,
-                          size: 50,
+                          size: 40,
                           color: Colors.white,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'বায়োডাটা নং',
-                          style: context.textTheme.bodyMedium?.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          _getBiodataNumber(),
-                          style: context.textTheme.titleLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        const SizedBox(width: 12),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'বায়োডাটা নং',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              _getBiodataNumber(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -167,44 +175,45 @@ class BiodataCard extends StatelessWidget {
             ),
             // Details
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
                   _buildInfoRow(
                     'জন্মসন',
                     '${DateFormat('dd/MM/yyyy').format(biodata.dateOfBirth)} [${_calculateAge(biodata.dateOfBirth)} বছর]',
                   ),
-                  const Divider(height: 16),
+                  const Divider(height: 12),
                   _buildInfoRow(
                     'উচ্চতা',
                     _formatHeight(biodata.height),
                   ),
-                  const Divider(height: 16),
+                  const Divider(height: 12),
                   _buildInfoRow(
                     'গাত্রবর্ন',
                     biodata.screenColor,
                   ),
-                  const Divider(height: 16),
+                  const Divider(height: 12),
                   _buildInfoRow(
                     'এলাকা',
-                    biodata.upzilla ?? 'N/A',
+                    biodata.maritalStatus,
                   ),
                 ],
               ),
             ),
             // View Button
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: ElevatedButton(
                 onPressed: onTap,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                child: const Text('সম্পূর্ন বায়োডাটা'),
+                child: const Text('সম্পূর্ণ বায়োডাটা'),
               ),
             ),
           ],
@@ -223,6 +232,7 @@ class BiodataCard extends StatelessWidget {
             style: const TextStyle(
               fontWeight: FontWeight.w500,
               color: Colors.grey,
+              fontSize: 13,
             ),
           ),
         ),
@@ -232,6 +242,7 @@ class BiodataCard extends StatelessWidget {
             value,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
+              fontSize: 13,
             ),
           ),
         ),
