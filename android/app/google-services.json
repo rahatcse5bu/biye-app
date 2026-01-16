@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "893917202752",
+    "project_id": "pnc-nikah",
+    "storage_bucket": "pnc-nikah.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893917202752:android:cc0f9ab8300f5c33d712a5",
+        "android_client_info": {
+          "package_name": "com.pncsoft.biye_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "893917202752-i2p6df74j191994e72vbfjkt1qm2n686.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pncsoft.biye_app",
+            "certificate_hash": "e25adeccf49a440d51eb626e1d97f44d4df2502e"
+          }
+        },
+        {
+          "client_id": "893917202752-on8lcq577rlf1p5n96ech0emdd62lrbd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRBfeoG6KCVi2SfaOjv4Q8yUiJePcYFmc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "893917202752-on8lcq577rlf1p5n96ech0emdd62lrbd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "893917202752-f1ou9foe68t02aplgrm4e9tdaccss9o4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.pnc-nikah"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:893917202752:android:47d2074aef2789bed712a5",
+        "android_client_info": {
+          "package_name": "com.pncsoft.biye_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "893917202752-on8lcq577rlf1p5n96ech0emdd62lrbd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRBfeoG6KCVi2SfaOjv4Q8yUiJePcYFmc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "893917202752-on8lcq577rlf1p5n96ech0emdd62lrbd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "893917202752-f1ou9foe68t02aplgrm4e9tdaccss9o4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.pnc-nikah"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
