@@ -37,6 +37,7 @@ class DashboardPage extends ConsumerWidget {
           ),
         ],
       ),
+      drawer: _buildDrawer(context, ref),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(dashboardStatsProvider),
         child: dashboardStats.when(
@@ -447,6 +448,273 @@ class DashboardPage extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authNotifierProvider);
+    
+    return Drawer(
+      child: Column(
+        children: [
+          // Header
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: authState.maybeWhen(
+              authenticated: (user) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 35,
+                    backgroundColor: Colors.white,
+                    child: Text(
+                      (user.name?.isNotEmpty ?? false) 
+                          ? user.name!.substring(0, 1).toUpperCase()
+                          : 'U',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    user.name ?? 'User',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    user.email,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppTheme.secondaryColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${user.points} পয়েন্ট',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              orElse: () => const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 35,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, size: 40, color: AppTheme.primaryColor),
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'User',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Menu Items
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.dashboard_outlined,
+                  title: 'ড্যাশবোর্ড',
+                  onTap: () => Navigator.pop(context),
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.edit_outlined,
+                  title: 'বায়োডাটা এডিট করুন',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BiodataEditPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.favorite_outline,
+                  title: 'পছন্দের তালিকা',
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('পছন্দের তালিকা - শীঘ্রই আসছে')),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.heart_broken_outlined,
+                  title: 'অপছন্দের তালিকা',
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('অপছন্দের তালিকা - শীঘ্রই আসছে')),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.shopping_bag_outlined,
+                  title: 'আমার বায়োডাটা ক্রয়সমূহ',
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('বায়োডাটা ক্রয়সমূহ - শীঘ্রই আসছে')),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.mail_outline,
+                  title: 'আমার বায়োডাটা অনুরোধসমূহ',
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('বায়োডাটা অনুরোধসমূহ - শীঘ্রই আসছে')),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.payment_outlined,
+                  title: 'পেমেন্ট এবং রিফান্ড',
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('পেমেন্ট এবং রিফান্ড - শীঘ্রই আসছে')),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.support_agent_outlined,
+                  title: 'সাপোর্ট & রিপোর্ট',
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('সাপোর্ট & রিপোর্ট - শীঘ্রই আসছে')),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.settings_outlined,
+                  title: 'সেটিংস',
+                  onTap: () {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('সেটিংস - শীঘ্রই আসছে')),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.logout_outlined,
+                  title: 'লগআউট',
+                  textColor: Colors.red.shade700,
+                  onTap: () {
+                    Navigator.pop(context);
+                    ref.read(authNotifierProvider.notifier).logout();
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          // Footer
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(color: Colors.grey.shade200),
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'PNC Nikah',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Version 1.0.0',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? textColor,
+  }) {
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: textColor ?? Colors.grey.shade700,
+        size: 24,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: textColor ?? Colors.grey.shade800,
+        ),
+      ),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
     );
   }
 }
