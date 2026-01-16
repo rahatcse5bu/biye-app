@@ -24,12 +24,10 @@ class AuthInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     if (err.response?.statusCode == 401) {
-      // Token expired, try to refresh
-      // You can implement token refresh logic here
+      // Token expired, clear local storage
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(AppConstants.accessTokenKey);
-      await prefs.remove(AppConstants.refreshTokenKey);
-      await prefs.setBool(AppConstants.isLoggedInKey, false);
+      await prefs.clear();
     }
     
     handler.next(err);

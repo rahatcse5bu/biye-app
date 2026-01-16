@@ -21,12 +21,26 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$UserModel {
+  @JsonKey(name: '_id')
   String get id => throw _privateConstructorUsedError;
   String get email => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_id')
+  int get userId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_role')
+  String get userRole => throw _privateConstructorUsedError;
+  @JsonKey(name: 'user_status')
+  String get userStatus => throw _privateConstructorUsedError;
+  @JsonKey(name: 'token_id')
+  String? get tokenId => throw _privateConstructorUsedError;
+  String? get token => throw _privateConstructorUsedError;
   String? get name => throw _privateConstructorUsedError;
-  String? get phone => throw _privateConstructorUsedError;
-  String? get profileImage => throw _privateConstructorUsedError;
-  DateTime? get createdAt => throw _privateConstructorUsedError;
+  String? get gender => throw _privateConstructorUsedError;
+  String? get fcmToken => throw _privateConstructorUsedError;
+  int get points => throw _privateConstructorUsedError;
+  @JsonKey(name: 'edited_timeline_index')
+  int get editedTimelineIndex => throw _privateConstructorUsedError;
+  @JsonKey(name: 'last_edited_timeline_index')
+  int get lastEditedTimelineIndex => throw _privateConstructorUsedError;
 
   /// Serializes this UserModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -44,12 +58,19 @@ abstract class $UserModelCopyWith<$Res> {
       _$UserModelCopyWithImpl<$Res, UserModel>;
   @useResult
   $Res call({
-    String id,
+    @JsonKey(name: '_id') String id,
     String email,
+    @JsonKey(name: 'user_id') int userId,
+    @JsonKey(name: 'user_role') String userRole,
+    @JsonKey(name: 'user_status') String userStatus,
+    @JsonKey(name: 'token_id') String? tokenId,
+    String? token,
     String? name,
-    String? phone,
-    String? profileImage,
-    DateTime? createdAt,
+    String? gender,
+    String? fcmToken,
+    int points,
+    @JsonKey(name: 'edited_timeline_index') int editedTimelineIndex,
+    @JsonKey(name: 'last_edited_timeline_index') int lastEditedTimelineIndex,
   });
 }
 
@@ -70,10 +91,17 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
   $Res call({
     Object? id = null,
     Object? email = null,
+    Object? userId = null,
+    Object? userRole = null,
+    Object? userStatus = null,
+    Object? tokenId = freezed,
+    Object? token = freezed,
     Object? name = freezed,
-    Object? phone = freezed,
-    Object? profileImage = freezed,
-    Object? createdAt = freezed,
+    Object? gender = freezed,
+    Object? fcmToken = freezed,
+    Object? points = null,
+    Object? editedTimelineIndex = null,
+    Object? lastEditedTimelineIndex = null,
   }) {
     return _then(
       _value.copyWith(
@@ -85,22 +113,50 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.email
                 : email // ignore: cast_nullable_to_non_nullable
                       as String,
+            userId: null == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
+                      as int,
+            userRole: null == userRole
+                ? _value.userRole
+                : userRole // ignore: cast_nullable_to_non_nullable
+                      as String,
+            userStatus: null == userStatus
+                ? _value.userStatus
+                : userStatus // ignore: cast_nullable_to_non_nullable
+                      as String,
+            tokenId: freezed == tokenId
+                ? _value.tokenId
+                : tokenId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            token: freezed == token
+                ? _value.token
+                : token // ignore: cast_nullable_to_non_nullable
+                      as String?,
             name: freezed == name
                 ? _value.name
                 : name // ignore: cast_nullable_to_non_nullable
                       as String?,
-            phone: freezed == phone
-                ? _value.phone
-                : phone // ignore: cast_nullable_to_non_nullable
+            gender: freezed == gender
+                ? _value.gender
+                : gender // ignore: cast_nullable_to_non_nullable
                       as String?,
-            profileImage: freezed == profileImage
-                ? _value.profileImage
-                : profileImage // ignore: cast_nullable_to_non_nullable
+            fcmToken: freezed == fcmToken
+                ? _value.fcmToken
+                : fcmToken // ignore: cast_nullable_to_non_nullable
                       as String?,
-            createdAt: freezed == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime?,
+            points: null == points
+                ? _value.points
+                : points // ignore: cast_nullable_to_non_nullable
+                      as int,
+            editedTimelineIndex: null == editedTimelineIndex
+                ? _value.editedTimelineIndex
+                : editedTimelineIndex // ignore: cast_nullable_to_non_nullable
+                      as int,
+            lastEditedTimelineIndex: null == lastEditedTimelineIndex
+                ? _value.lastEditedTimelineIndex
+                : lastEditedTimelineIndex // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -117,12 +173,19 @@ abstract class _$$UserModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    String id,
+    @JsonKey(name: '_id') String id,
     String email,
+    @JsonKey(name: 'user_id') int userId,
+    @JsonKey(name: 'user_role') String userRole,
+    @JsonKey(name: 'user_status') String userStatus,
+    @JsonKey(name: 'token_id') String? tokenId,
+    String? token,
     String? name,
-    String? phone,
-    String? profileImage,
-    DateTime? createdAt,
+    String? gender,
+    String? fcmToken,
+    int points,
+    @JsonKey(name: 'edited_timeline_index') int editedTimelineIndex,
+    @JsonKey(name: 'last_edited_timeline_index') int lastEditedTimelineIndex,
   });
 }
 
@@ -142,10 +205,17 @@ class __$$UserModelImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? email = null,
+    Object? userId = null,
+    Object? userRole = null,
+    Object? userStatus = null,
+    Object? tokenId = freezed,
+    Object? token = freezed,
     Object? name = freezed,
-    Object? phone = freezed,
-    Object? profileImage = freezed,
-    Object? createdAt = freezed,
+    Object? gender = freezed,
+    Object? fcmToken = freezed,
+    Object? points = null,
+    Object? editedTimelineIndex = null,
+    Object? lastEditedTimelineIndex = null,
   }) {
     return _then(
       _$UserModelImpl(
@@ -157,22 +227,50 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value.email
             : email // ignore: cast_nullable_to_non_nullable
                   as String,
+        userId: null == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
+                  as int,
+        userRole: null == userRole
+            ? _value.userRole
+            : userRole // ignore: cast_nullable_to_non_nullable
+                  as String,
+        userStatus: null == userStatus
+            ? _value.userStatus
+            : userStatus // ignore: cast_nullable_to_non_nullable
+                  as String,
+        tokenId: freezed == tokenId
+            ? _value.tokenId
+            : tokenId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        token: freezed == token
+            ? _value.token
+            : token // ignore: cast_nullable_to_non_nullable
+                  as String?,
         name: freezed == name
             ? _value.name
             : name // ignore: cast_nullable_to_non_nullable
                   as String?,
-        phone: freezed == phone
-            ? _value.phone
-            : phone // ignore: cast_nullable_to_non_nullable
+        gender: freezed == gender
+            ? _value.gender
+            : gender // ignore: cast_nullable_to_non_nullable
                   as String?,
-        profileImage: freezed == profileImage
-            ? _value.profileImage
-            : profileImage // ignore: cast_nullable_to_non_nullable
+        fcmToken: freezed == fcmToken
+            ? _value.fcmToken
+            : fcmToken // ignore: cast_nullable_to_non_nullable
                   as String?,
-        createdAt: freezed == createdAt
-            ? _value.createdAt
-            : createdAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime?,
+        points: null == points
+            ? _value.points
+            : points // ignore: cast_nullable_to_non_nullable
+                  as int,
+        editedTimelineIndex: null == editedTimelineIndex
+            ? _value.editedTimelineIndex
+            : editedTimelineIndex // ignore: cast_nullable_to_non_nullable
+                  as int,
+        lastEditedTimelineIndex: null == lastEditedTimelineIndex
+            ? _value.lastEditedTimelineIndex
+            : lastEditedTimelineIndex // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }
@@ -182,33 +280,63 @@ class __$$UserModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$UserModelImpl extends _UserModel {
   const _$UserModelImpl({
-    required this.id,
+    @JsonKey(name: '_id') required this.id,
     required this.email,
+    @JsonKey(name: 'user_id') required this.userId,
+    @JsonKey(name: 'user_role') required this.userRole,
+    @JsonKey(name: 'user_status') required this.userStatus,
+    @JsonKey(name: 'token_id') this.tokenId,
+    this.token,
     this.name,
-    this.phone,
-    this.profileImage,
-    this.createdAt,
+    this.gender,
+    this.fcmToken,
+    this.points = 0,
+    @JsonKey(name: 'edited_timeline_index') this.editedTimelineIndex = 0,
+    @JsonKey(name: 'last_edited_timeline_index')
+    this.lastEditedTimelineIndex = 0,
   }) : super._();
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$UserModelImplFromJson(json);
 
   @override
+  @JsonKey(name: '_id')
   final String id;
   @override
   final String email;
   @override
+  @JsonKey(name: 'user_id')
+  final int userId;
+  @override
+  @JsonKey(name: 'user_role')
+  final String userRole;
+  @override
+  @JsonKey(name: 'user_status')
+  final String userStatus;
+  @override
+  @JsonKey(name: 'token_id')
+  final String? tokenId;
+  @override
+  final String? token;
+  @override
   final String? name;
   @override
-  final String? phone;
+  final String? gender;
   @override
-  final String? profileImage;
+  final String? fcmToken;
   @override
-  final DateTime? createdAt;
+  @JsonKey()
+  final int points;
+  @override
+  @JsonKey(name: 'edited_timeline_index')
+  final int editedTimelineIndex;
+  @override
+  @JsonKey(name: 'last_edited_timeline_index')
+  final int lastEditedTimelineIndex;
 
   @override
   String toString() {
-    return 'UserModel(id: $id, email: $email, name: $name, phone: $phone, profileImage: $profileImage, createdAt: $createdAt)';
+    return 'UserModel(id: $id, email: $email, userId: $userId, userRole: $userRole, userStatus: $userStatus, tokenId: $tokenId, token: $token, name: $name, gender: $gender, fcmToken: $fcmToken, points: $points, editedTimelineIndex: $editedTimelineIndex, lastEditedTimelineIndex: $lastEditedTimelineIndex)';
   }
 
   @override
@@ -218,18 +346,45 @@ class _$UserModelImpl extends _UserModel {
             other is _$UserModelImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.email, email) || other.email == email) &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.userRole, userRole) ||
+                other.userRole == userRole) &&
+            (identical(other.userStatus, userStatus) ||
+                other.userStatus == userStatus) &&
+            (identical(other.tokenId, tokenId) || other.tokenId == tokenId) &&
+            (identical(other.token, token) || other.token == token) &&
             (identical(other.name, name) || other.name == name) &&
-            (identical(other.phone, phone) || other.phone == phone) &&
-            (identical(other.profileImage, profileImage) ||
-                other.profileImage == profileImage) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
+            (identical(other.gender, gender) || other.gender == gender) &&
+            (identical(other.fcmToken, fcmToken) ||
+                other.fcmToken == fcmToken) &&
+            (identical(other.points, points) || other.points == points) &&
+            (identical(other.editedTimelineIndex, editedTimelineIndex) ||
+                other.editedTimelineIndex == editedTimelineIndex) &&
+            (identical(
+                  other.lastEditedTimelineIndex,
+                  lastEditedTimelineIndex,
+                ) ||
+                other.lastEditedTimelineIndex == lastEditedTimelineIndex));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, email, name, phone, profileImage, createdAt);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    email,
+    userId,
+    userRole,
+    userStatus,
+    tokenId,
+    token,
+    name,
+    gender,
+    fcmToken,
+    points,
+    editedTimelineIndex,
+    lastEditedTimelineIndex,
+  );
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.
@@ -247,12 +402,20 @@ class _$UserModelImpl extends _UserModel {
 
 abstract class _UserModel extends UserModel {
   const factory _UserModel({
-    required final String id,
+    @JsonKey(name: '_id') required final String id,
     required final String email,
+    @JsonKey(name: 'user_id') required final int userId,
+    @JsonKey(name: 'user_role') required final String userRole,
+    @JsonKey(name: 'user_status') required final String userStatus,
+    @JsonKey(name: 'token_id') final String? tokenId,
+    final String? token,
     final String? name,
-    final String? phone,
-    final String? profileImage,
-    final DateTime? createdAt,
+    final String? gender,
+    final String? fcmToken,
+    final int points,
+    @JsonKey(name: 'edited_timeline_index') final int editedTimelineIndex,
+    @JsonKey(name: 'last_edited_timeline_index')
+    final int lastEditedTimelineIndex,
   }) = _$UserModelImpl;
   const _UserModel._() : super._();
 
@@ -260,17 +423,38 @@ abstract class _UserModel extends UserModel {
       _$UserModelImpl.fromJson;
 
   @override
+  @JsonKey(name: '_id')
   String get id;
   @override
   String get email;
   @override
+  @JsonKey(name: 'user_id')
+  int get userId;
+  @override
+  @JsonKey(name: 'user_role')
+  String get userRole;
+  @override
+  @JsonKey(name: 'user_status')
+  String get userStatus;
+  @override
+  @JsonKey(name: 'token_id')
+  String? get tokenId;
+  @override
+  String? get token;
+  @override
   String? get name;
   @override
-  String? get phone;
+  String? get gender;
   @override
-  String? get profileImage;
+  String? get fcmToken;
   @override
-  DateTime? get createdAt;
+  int get points;
+  @override
+  @JsonKey(name: 'edited_timeline_index')
+  int get editedTimelineIndex;
+  @override
+  @JsonKey(name: 'last_edited_timeline_index')
+  int get lastEditedTimelineIndex;
 
   /// Create a copy of UserModel
   /// with the given fields replaced by the non-null parameter values.

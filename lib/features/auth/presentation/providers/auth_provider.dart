@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/providers/dio_provider.dart';
 import '../../../../core/providers/network_provider.dart';
@@ -7,9 +9,10 @@ import '../../data/datasources/auth_local_datasource.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../../domain/usecases/login_usecase.dart';
+import '../../domain/usecases/get_current_user_usecase.dart';
+import '../../domain/usecases/is_logged_in_usecase.dart';
+import '../../domain/usecases/login_with_google_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
-import '../../domain/usecases/register_usecase.dart';
 import 'auth_state.dart';
 
 // Shared Preferences Provider
@@ -17,10 +20,25 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('SharedPreferences must be overridden');
 });
 
+// Firebase and Google Sign-In Providers
+final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
+  return FirebaseAuth.instance;
+});
+
+final googleSignInProvider = Provider<GoogleSignIn>((ref) {
+  return GoogleSignIn();
+});
+
 // Data Sources
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
   final dioClient = ref.watch(dioClientProvider);
-  return AuthRemoteDataSourceImpl(dioClient);
+  final firebaseAuth = ref.watch(firebaseAuthProvider);
+  final googleSignIn = ref.watch(googleSignInProvider);
+  return AuthRemoteDataSourceImpl(
+    dioClient: dioClient,
+    firebaseAuth: firebaseAuth,
+    googleSignIn: googleSignIn,
+  );
 });
 
 final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((ref) {
@@ -42,14 +60,19 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 // Use Cases
-final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
+final loginWithGoogleUseCaseProvider = Provider<LoginWithGoogleUseCase>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return LoginUseCase(repository);
+  return LoginWithGoogleUseCase(repository);
 });
 
-final registerUseCaseProvider = Provider<RegisterUseCase>((ref) {
+final getCurrentUserUseCaseProvider = Provider<GetCurrentUserUseCase>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return RegisterUseCase(repository);
+  return GetCurrentUserUseCase(repository);
+});
+
+final isLoggedInUseCaseProvider = Provider<IsLoggedInUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return IsLoggedInUseCase(repository);
 });
 
 final logoutUseCaseProvider = Provider<LogoutUseCase>((ref) {
@@ -59,57 +82,38 @@ final logoutUseCaseProvider = Provider<LogoutUseCase>((ref) {
 
 // Auth Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
-  final LoginUseCase loginUseCase;
-  final RegisterUseCase registerUseCase;
+  final LoginWithGoogleUseCase loginWithGoogleUseCase;
+  final GetCurrentUserUseCase getCurrentUserUseCase;
+  final IsLoggedInUseCase isLoggedInUseCase;
   final LogoutUseCase logoutUseCase;
-  final AuthRepository authRepository;
   
   AuthNotifier({
-    required this.loginUseCase,
-    required this.registerUseCase,
+    required this.loginWithGoogleUseCase,
+    required this.getCurrentUserUseCase,
+    required this.isLoggedInUseCase,
     required this.logoutUseCase,
-    required this.authRepository,
   }) : super(const AuthState.initial()) {
     checkAuthStatus();
   }
   
   Future<void> checkAuthStatus() async {
-    final result = await authRepository.isLoggedIn();
-    result.fold(
-      (failure) => state = const AuthState.unauthenticated(),
-      (isLoggedIn) async {
-        if (isLoggedIn) {
-          final userResult = await authRepository.getCurrentUser();
-          userResult.fold(
-            (failure) => state = const AuthState.unauthenticated(),
-            (user) => state = AuthState.authenticated(user),
-          );
-        } else {
-          state = const AuthState.unauthenticated();
-        }
-      },
-    );
+    final isLoggedIn = await isLoggedInUseCase();
+    if (isLoggedIn) {
+      final user = await getCurrentUserUseCase();
+      if (user != null) {
+        state = AuthState.authenticated(user);
+      } else {
+        state = const AuthState.unauthenticated();
+      }
+    } else {
+      state = const AuthState.unauthenticated();
+    }
   }
   
-  Future<void> login(String email, String password) async {
+  Future<void> loginWithGoogle() async {
     state = const AuthState.loading();
     
-    final result = await loginUseCase(
-      LoginParams(email: email, password: password),
-    );
-    
-    result.fold(
-      (failure) => state = AuthState.error(failure.message),
-      (user) => state = AuthState.authenticated(user),
-    );
-  }
-  
-  Future<void> register(String email, String password, String name) async {
-    state = const AuthState.loading();
-    
-    final result = await registerUseCase(
-      RegisterParams(email: email, password: password, name: name),
-    );
+    final result = await loginWithGoogleUseCase();
     
     result.fold(
       (failure) => state = AuthState.error(failure.message),
@@ -131,15 +135,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
 // Auth State Notifier Provider
 final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final loginUseCase = ref.watch(loginUseCaseProvider);
-  final registerUseCase = ref.watch(registerUseCaseProvider);
+  final loginWithGoogleUseCase = ref.watch(loginWithGoogleUseCaseProvider);
+  final getCurrentUserUseCase = ref.watch(getCurrentUserUseCaseProvider);
+  final isLoggedInUseCase = ref.watch(isLoggedInUseCaseProvider);
   final logoutUseCase = ref.watch(logoutUseCaseProvider);
-  final authRepository = ref.watch(authRepositoryProvider);
   
   return AuthNotifier(
-    loginUseCase: loginUseCase,
-    registerUseCase: registerUseCase,
+    loginWithGoogleUseCase: loginWithGoogleUseCase,
+    getCurrentUserUseCase: getCurrentUserUseCase,
+    isLoggedInUseCase: isLoggedInUseCase,
     logoutUseCase: logoutUseCase,
-    authRepository: authRepository,
   );
 });

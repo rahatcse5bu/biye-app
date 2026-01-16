@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/network/network_info.dart';
@@ -19,56 +20,24 @@ class AuthRepositoryImpl implements AuthRepository {
   });
   
   @override
-  Future<Either<Failure, UserEntity>> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<Either<Failure, UserEntity>> loginWithGoogle() async {
     if (!await networkInfo.isConnected) {
       return const Left(NetworkFailure('No internet connection'));
     }
     
     try {
-      final user = await remoteDataSource.login(
-        email: email,
-        password: password,
-      );
+      final user = await remoteDataSource.loginWithGoogle();
       await localDataSource.cacheUser(user);
+      if (user.token != null) {
+        await localDataSource.cacheToken(user.token!);
+      }
       return Right(user.toEntity());
+    } on FirebaseAuthException catch (e) {
+      return Left(ServerFailure(e.message ?? 'Google Sign-In failed'));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(e.message));
-    } on ValidationException catch (e) {
-      return Left(ValidationFailure(e.message));
-    } catch (e) {
-      return Left(UnknownFailure(e.toString()));
-    }
-  }
-  
-  @override
-  Future<Either<Failure, UserEntity>> register({
-    required String email,
-    required String password,
-    required String name,
-  }) async {
-    if (!await networkInfo.isConnected) {
-      return const Left(NetworkFailure('No internet connection'));
-    }
-    
-    try {
-      final user = await remoteDataSource.register(
-        email: email,
-        password: password,
-        name: name,
-      );
-      await localDataSource.cacheUser(user);
-      return Right(user.toEntity());
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
-    } on ValidationException catch (e) {
-      return Left(ValidationFailure(e.message));
     } catch (e) {
       return Left(UnknownFailure(e.toString()));
     }
@@ -88,24 +57,22 @@ class AuthRepositoryImpl implements AuthRepository {
   }
   
   @override
-  Future<Either<Failure, UserEntity>> getCurrentUser() async {
+  Future<UserEntity?> getCurrentUser() async {
     try {
       final user = await localDataSource.getCachedUser();
-      return Right(user.toEntity());
-    } on CacheException catch (e) {
-      return Left(CacheFailure(e.message));
+      return user?.toEntity();
     } catch (e) {
-      return Left(UnknownFailure(e.toString()));
+      return null;
     }
   }
   
   @override
-  Future<Either<Failure, bool>> isLoggedIn() async {
+  Future<bool> isLoggedIn() async {
     try {
-      final isLoggedIn = await localDataSource.isLoggedIn();
-      return Right(isLoggedIn);
+      final token = await localDataSource.getToken();
+      return token != null && token.isNotEmpty;
     } catch (e) {
-      return Left(UnknownFailure(e.toString()));
+      return false;
     }
   }
 }

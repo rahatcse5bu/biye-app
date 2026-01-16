@@ -1,62 +1,80 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/network/dio_client.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> login({
-    required String email,
-    required String password,
-  });
-  
-  Future<UserModel> register({
-    required String email,
-    required String password,
-    required String name,
-  });
-  
+  Future<UserModel> loginWithGoogle();
   Future<void> logout();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final DioClient dioClient;
+  final FirebaseAuth firebaseAuth;
+  final GoogleSignIn googleSignIn;
   
-  AuthRemoteDataSourceImpl(this.dioClient);
-  
-  @override
-  Future<UserModel> login({
-    required String email,
-    required String password,
-  }) async {
-    final response = await dioClient.post(
-      '/auth/login',
-      data: {
-        'email': email,
-        'password': password,
-      },
-    );
-    
-    return UserModel.fromJson(response.data['data']);
-  }
+  AuthRemoteDataSourceImpl({
+    required this.dioClient,
+    required this.firebaseAuth,
+    required this.googleSignIn,
+  });
   
   @override
-  Future<UserModel> register({
-    required String email,
-    required String password,
-    required String name,
-  }) async {
-    final response = await dioClient.post(
-      '/auth/register',
-      data: {
-        'email': email,
-        'password': password,
-        'name': name,
-      },
-    );
-    
-    return UserModel.fromJson(response.data['data']);
+  Future<UserModel> loginWithGoogle() async {
+    try {
+      // Sign in with Google
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        throw Exception('Google sign in aborted');
+      }
+
+      // Get authentication details
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create Firebase credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase
+      final userCredential = await firebaseAuth.signInWithCredential(credential);
+      final user = userCredential.user;
+      
+      if (user == null) {
+        throw Exception('Firebase user is null');
+      }
+
+      // Get Firebase ID token
+      final idToken = await user.getIdToken();
+
+      // Send to backend to create/login user
+      final response = await dioClient.post(
+        '/user-info/create-login-user/app',
+        data: {
+          'email': user.email,
+          'token_id': idToken,
+          'user_role': 'user',
+          'user_status': 'active',
+          if (user.displayName != null) 'name': user.displayName,
+        },
+      );
+
+      if (response.data['success'] != true) {
+        throw Exception(response.data['message'] ?? 'Login failed');
+      }
+
+      return UserModel.fromJson(response.data['data']);
+    } catch (e) {
+      throw Exception('Login failed: $e');
+    }
   }
   
   @override
   Future<void> logout() async {
-    await dioClient.post('/auth/logout');
+    await Future.wait([
+      googleSignIn.signOut(),
+      firebaseAuth.signOut(),
+    ]);
   }
 }

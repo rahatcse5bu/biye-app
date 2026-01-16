@@ -1,41 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/extensions.dart';
-import '../../../../core/utils/validators.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 
-class LoginPage extends ConsumerStatefulWidget {
+class LoginPage extends ConsumerWidget {
   const LoginPage({super.key});
   
-  @override
-  ConsumerState<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends ConsumerState<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
-  
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-  
-  void _handleLogin() {
-    if (_formKey.currentState!.validate()) {
-      ref.read(authNotifierProvider.notifier).login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-    }
+  void _handleGoogleSignIn(WidgetRef ref) {
+    ref.read(authNotifierProvider.notifier).loginWithGoogle();
   }
   
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
     
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
@@ -50,83 +27,74 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
     
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Welcome Back!',
-                  style: context.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Logo or App Icon
+              Icon(
+                Icons.favorite,
+                size: 80,
+                color: Theme.of(context).primaryColor,
+              ),
+              const SizedBox(height: 24),
+              
+              // Welcome Text
+              Text(
+                'Welcome to PNC Nikah',
+                style: context.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Login to continue',
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    color: context.textTheme.bodySmall?.color,
-                  ),
-                  textAlign: TextAlign.center,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Find your perfect match',
+                style: context.textTheme.bodyLarge?.copyWith(
+                  color: context.textTheme.bodySmall?.color,
                 ),
-                const SizedBox(height: 48),
-                TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email),
-                  ),
-                  validator: Validators.validateEmail,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 64),
+              
+              // Google Sign-In Button
+              authState.maybeWhen(
+                loading: () => const Center(
+                  child: CircularProgressIndicator(),
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
-                    ),
+                orElse: () => FilledButton.icon(
+                  onPressed: () => _handleGoogleSignIn(ref),
+                  icon: Image.asset(
+                    'assets/google_logo.png',
+                    height: 24,
+                    width: 24,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.login, size: 24);
+                    },
                   ),
-                  validator: Validators.validatePassword,
-                ),
-                const SizedBox(height: 24),
-                authState.maybeWhen(
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  orElse: () => ElevatedButton(
-                    onPressed: _handleLogin,
-                    child: const Padding(
-                      padding: EdgeInsets.all(12.0),
-                      child: Text('Login'),
-                    ),
+                  label: const Text('Continue with Google'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    side: BorderSide(color: Colors.grey.shade300),
                   ),
                 ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () {
-                    // Navigate to register page
-                  },
-                  child: const Text('Don\'t have an account? Register'),
+              ),
+              const SizedBox(height: 24),
+              
+              // Terms and Privacy
+              Text(
+                'By continuing, you agree to our Terms of Service and Privacy Policy',
+                style: context.textTheme.bodySmall?.copyWith(
+                  color: Colors.grey,
                 ),
-              ],
-            ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),
