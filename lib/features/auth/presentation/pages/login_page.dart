@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../providers/auth_provider.dart';
 import '../providers/auth_state.dart';
 
@@ -20,7 +21,11 @@ class LoginPage extends ConsumerWidget {
         error: (message) => context.showSnackBar(message, isError: true),
         authenticated: (_) {
           context.showSnackBar('Login successful!');
-          // Navigate to home page
+          // Navigate to dashboard page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const DashboardPage()),
+          );
         },
         orElse: () {},
       );
