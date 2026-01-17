@@ -258,7 +258,7 @@ class BiodataEditRemoteDataSource {
   // === Expected Partner ===
   Future<ExpectedPartnerEditModel> getExpectedPartner() async {
     try {
-      final response = await dioClient.get('/expected-lifepartner/token');
+      final response = await dioClient.get('/expected-life-partner/token');
       if (response.data['success'] == true) {
         return ExpectedPartnerEditModel.fromJson(response.data['data']);
       }
@@ -283,7 +283,7 @@ class BiodataEditRemoteDataSource {
 
   Future<void> updateExpectedPartner(ExpectedPartnerEditModel model) async {
     try {
-      await dioClient.put('/expected-lifepartner', data: model.toJson());
+      await dioClient.put('/expected-life-partner', data: model.toJson());
     } catch (e) {
       throw Exception('Error updating expected partner: $e');
     }
@@ -291,7 +291,7 @@ class BiodataEditRemoteDataSource {
 
   Future<void> createExpectedPartner(ExpectedPartnerEditModel model) async {
     try {
-      await dioClient.post('/expected-lifepartner', data: model.toJson());
+      await dioClient.post('/expected-life-partner', data: model.toJson());
     } catch (e) {
       throw Exception('Error creating expected partner: $e');
     }
@@ -362,6 +362,15 @@ class BiodataEditRemoteDataSource {
       await dioClient.post('/ongikar-nama', data: model.toJson());
     } catch (e) {
       throw Exception('Error creating ongikar nama: $e');
+    }
+  }
+
+  // === Submit for Review ===
+  Future<void> submitForReview() async {
+    try {
+      await dioClient.put('/user-info', data: {'user_status': 'in review'});
+    } catch (e) {
+      throw Exception('Error submitting for review: $e');
     }
   }
 

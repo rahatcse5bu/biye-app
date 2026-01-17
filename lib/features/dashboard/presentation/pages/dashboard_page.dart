@@ -99,12 +99,12 @@ class DashboardPage extends ConsumerWidget {
       physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
         children: [
-          // Header with gradient
+          // Points Card Section
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.8)],
+                colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.85)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -112,94 +112,112 @@ class DashboardPage extends ConsumerWidget {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(14, 2, 14, 14),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: _buildPointsCard(context, stats),
               ),
             ),
           ),
           
-          // Stats Grid
+          // Main Content
           Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Section 1: Proposals
+                _buildSectionTitle('প্রস্তাবনা'),
+                const SizedBox(height: 12),
                 GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisCount: 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 1.25,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.3,
                   children: [
-                    _buildCompactStatCard(
-                      context,
+                    _buildStatCard(
                       title: 'পেন্ডিং প্রস্তাব',
                       value: '${stats.pendingProposals}',
-                      unit: 'টি',
                       icon: Icons.pending_actions_rounded,
-                      color: AppTheme.primaryColor,
+                      color: Colors.blue,
                     ),
-                    _buildCompactStatCard(
-                      context,
+                    _buildStatCard(
                       title: 'মোট প্রস্তাব',
                       value: '${stats.totalProposals}',
-                      unit: 'টি',
                       icon: Icons.list_alt_rounded,
-                      color: AppTheme.primaryColor.withOpacity(0.85),
-                    ),
-                    _buildCompactStatCard(
-                      context,
-                      title: 'পছন্দের তালিকায়',
-                      value: '${stats.favoriteCount}',
-                      unit: '',
-                      icon: Icons.favorite_rounded,
-                      color: AppTheme.secondaryColor,
-                    ),
-                    _buildCompactStatCard(
-                      context,
-                      title: 'অপছন্দের তালিকায়',
-                      value: '${stats.unFavoriteCount}',
-                      unit: '',
-                      icon: Icons.heart_broken_rounded,
-                      color: AppTheme.primaryColor.withOpacity(0.7),
-                    ),
-                    _buildCompactStatCard(
-                      context,
-                      title: 'আপনাকে পছন্দ করেছে',
-                      value: '${stats.likesCount}',
-                      unit: '',
-                      icon: Icons.thumb_up_rounded,
-                      color: AppTheme.secondaryColor.withOpacity(0.85),
-                    ),
-                    _buildCompactStatCard(
-                      context,
-                      title: 'বায়োডাটা ভিজিট',
-                      value: '${stats.viewsCount}',
-                      unit: '',
-                      icon: Icons.visibility_rounded,
-                      color: AppTheme.primaryColor.withOpacity(0.75),
-                    ),
-                    _buildCompactStatCard(
-                      context,
-                      title: 'আমার ক্রয়সমূহ',
-                      value: '${stats.contactPurchaseCount}',
-                      unit: '',
-                      icon: Icons.shopping_bag_rounded,
-                      color: AppTheme.secondaryColor.withOpacity(0.75),
-                    ),
-                    _buildCompactStatCard(
-                      context,
-                      title: 'আপ্রুভাল রেট',
-                      value: stats.approvedPercentage.toStringAsFixed(0),
-                      unit: '%',
-                      icon: Icons.check_circle_rounded,
-                      color: AppTheme.secondaryColor.withOpacity(0.9),
+                      color: Colors.indigo,
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                _buildRejectionCard(context, stats),
+                
+                const SizedBox(height: 24),
+                
+                // Section 2: Interactions
+                _buildSectionTitle('ইন্টারঅ্যাকশন'),
+                const SizedBox(height: 12),
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.3,
+                  children: [
+                    _buildStatCard(
+                      title: 'পছন্দের তালিকা',
+                      value: '${stats.favoriteCount}',
+                      icon: Icons.favorite_rounded,
+                      color: Colors.red,
+                    ),
+                    _buildStatCard(
+                      title: 'অপছন্দের তালিকা',
+                      value: '${stats.unFavoriteCount}',
+                      icon: Icons.heart_broken_rounded,
+                      color: Colors.grey,
+                    ),
+                    _buildStatCard(
+                      title: 'আপনাকে পছন্দ করেছে',
+                      value: '${stats.likesCount}',
+                      icon: Icons.thumb_up_rounded,
+                      color: Colors.orange,
+                    ),
+                    _buildStatCard(
+                      title: 'বায়োডাটা ভিজিট',
+                      value: '${stats.viewsCount}',
+                      icon: Icons.visibility_rounded,
+                      color: Colors.teal,
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Section 3: Account
+                _buildSectionTitle('আপনার অ্যাকাউন্ট'),
+                const SizedBox(height: 12),
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.3,
+                  children: [
+                    _buildStatCard(
+                      title: 'আমার ক্রয়সমূহ',
+                      value: '${stats.contactPurchaseCount}',
+                      icon: Icons.shopping_bag_rounded,
+                      color: Colors.purple,
+                    ),
+                    _buildStatCard(
+                      title: 'অনুমোদন হার',
+                      value: stats.approvedPercentage.toStringAsFixed(0),
+                      unit: '%',
+                      icon: Icons.check_circle_rounded,
+                      color: Colors.green,
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -210,72 +228,78 @@ class DashboardPage extends ConsumerWidget {
 
   Widget _buildPointsCard(BuildContext context, dynamic stats) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  color: AppTheme.primaryColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
+                child: const Icon(
                   Icons.stars_rounded,
                   color: AppTheme.primaryColor,
-                  size: 18,
+                  size: 20,
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'আমার বর্তমান পয়েন্ট',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w500,
-                      ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'আমার পয়েন্ট ব্যালেন্স',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
                     ),
-                    const SizedBox(height: 1),
-                    Text(
-                      stats.points.toStringAsFixed(2),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.primaryColor,
-                        height: 1,
-                      ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    stats.points.toStringAsFixed(2),
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryColor,
+                      height: 1,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          
+          const SizedBox(height: 14),
+          
+          // Description
           Text(
-            'আপনার একাউন্টে এখন যত্‌পরিমাণ পয়েন্ট জমা রয়েছে',
+            'আপনার অ্যাকাউন্টে উপলব্ধ পয়েন্ট দিয়ে যেকোনো সেবা ক্রয় করুন',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               color: Colors.grey.shade600,
-              height: 1.2,
+              height: 1.4,
             ),
           ),
-          const SizedBox(height: 10),
+          
+          const SizedBox(height: 12),
+          
+          // Action Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -283,9 +307,9 @@ class DashboardPage extends ConsumerWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 11),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 elevation: 0,
               ),
@@ -296,6 +320,105 @@ class DashboardPage extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: Colors.black87,
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    String unit = '',
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {},
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 18),
+                ),
+                const Spacer(),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        value,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: color,
+                          height: 1,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (unit.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4, bottom: 2),
+                        child: Text(
+                          unit,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: color.withOpacity(0.7),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

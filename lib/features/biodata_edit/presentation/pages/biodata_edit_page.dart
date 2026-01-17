@@ -275,14 +275,19 @@ class BiodataEditPage extends ConsumerWidget {
                           }
                         }
                       } else {
-                        // Final save and exit
+                        // Final save and submit for review
                         try {
                           await _saveCurrentStep(ref, currentStep);
+                          
+                          // Submit for review
+                          await ref.read(biodataEditRemoteDataSourceProvider).submitForReview();
+                          
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('বায়োডাটা সফলভাবে সংরক্ষিত হয়েছে'),
+                                content: Text('বায়োডাটা সফলভাবে সংরক্ষিত হয়েছে এবং পর্যালোচনার জন্য জমা দেওয়া হয়েছে'),
                                 backgroundColor: AppTheme.secondaryColor,
+                                duration: Duration(seconds: 3),
                               ),
                             );
                             Navigator.of(context).pop();
