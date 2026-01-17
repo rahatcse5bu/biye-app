@@ -227,7 +227,7 @@ class PurchasesPage extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildFirstStepTable(context, purchases),
+          _buildFirstStepTable(context, purchases, ref),
         ],
       ),
     );
@@ -261,7 +261,7 @@ class PurchasesPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildFirstStepTable(BuildContext context, List purchases) {
+  Widget _buildFirstStepTable(BuildContext context, List purchases, WidgetRef ref) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Column(
@@ -281,7 +281,7 @@ class PurchasesPage extends ConsumerWidget {
                 _buildHeaderCell('Bio Details', 150),
                 _buildHeaderCell('ফিডব্যাক', 150),
                 _buildHeaderCell('স্ট্যাটাস', 100),
-                _buildHeaderCell('আসমান', 80),
+                _buildHeaderCell('আকশন', 200),
               ],
             ),
           ),
@@ -303,9 +303,9 @@ class PurchasesPage extends ConsumerWidget {
                       _buildCell('${purchase.bioId}', 100),
                       _buildCell('${purchase.zilla},${purchase.upzilla}', 200),
                       _buildCell('...', 150),
-                      _buildCell(purchase.feedback ?? 'N/A', 150),
+                      _buildFeedbackEditButton(context, purchase, ref, 150),
                       _buildStatusCell(purchase.statusBangla, purchase.statusColor, 100),
-                      _buildActionButton(context, purchase),
+                      _buildFirstStepActionButtons(context, purchase, ref),
                     ],
                   ),
                 ),
@@ -452,5 +452,266 @@ class PurchasesPage extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildFirstStepActionButtons(BuildContext context, dynamic purchase, WidgetRef ref) {
+    return SizedBox(
+      width: 200,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // View Button
+          Container(
+            width: 36,
+            height: 36,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade400,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.remove_red_eye, color: Colors.white, size: 16),
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BiodataDetailPage(
+                      biodataId: purchase.bioUser,
+                      biodataNumber: '${purchase.bioId}',
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // Approve Button
+          Container(
+            width: 36,
+            height: 36,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.green.shade400,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.check, color: Colors.white, size: 16),
+              padding: EdgeInsets.zero,
+              onPressed: () => _handleStatusUpdate(context, ref, purchase.user, 'approved'),
+            ),
+          ),
+          // Reject Button
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.red.shade400,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white, size: 16),
+              padding: EdgeInsets.zero,
+              onPressed: () => _handleStatusUpdate(context, ref, purchase.user, 'rejected'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeedbackEditButton(BuildContext context, dynamic purchase, WidgetRef ref, double width) {
+    return SizedBox(
+      width: width,
+      child: GestureDetector(
+        onTap: () => _showFeedbackEditDialog(context, purchase, ref),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.blue.shade50,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: Colors.blue.shade200),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: Text(
+                  purchase.feedback ?? 'N/A',
+                  style: TextStyle(fontSize: 11, color: Colors.blue.shade700),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(Icons.edit, size: 12, color: Colors.blue.shade700),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFeedbackEditDialog(BuildContext context, dynamic purchase, WidgetRef ref) {
+    final TextEditingController feedbackController = TextEditingController(
+      text: purchase.feedback ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('ফিডব্যাক এডিট করুন'),
+        content: TextField(
+          controller: feedbackController,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            hintText: 'ফিডব্যাক লিখুন...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('বাতিল'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _handleFeedbackUpdate(
+                context,
+                ref,
+                purchase.user,
+                feedbackController.text,
+              );
+            },
+            child: const Text('সেভ করুন'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleFeedbackUpdate(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    String feedback,
+  ) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final dataSource = ref.read(purchasesFirstStepDataSourceProvider);
+      final success = await dataSource.updateBioChoiceFeedback(
+        userId: userId,
+        feedback: feedback,
+      );
+
+      // Close loading indicator
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+
+      if (success) {
+        // Refresh the list
+        ref.invalidate(purchasesFirstStepProvider);
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('ফিডব্যাক আপডেট হয়েছে'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('আপডেট ব্যর্থ হয়েছে'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('একটি ত্রুটি ঘটেছে'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleStatusUpdate(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+    String status,
+  ) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final dataSource = ref.read(purchasesFirstStepDataSourceProvider);
+      final success = await dataSource.updateBioChoiceStatus(
+        userId: userId,
+        status: status,
+      );
+
+      // Close loading indicator
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+
+      if (success) {
+        // Refresh the list
+        ref.invalidate(purchasesFirstStepProvider);
+        
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                status == 'approved' 
+                  ? 'অনুমোদিত হয়েছে' 
+                  : 'প্রত্যাখ্যান করা হয়েছে'
+              ),
+              backgroundColor: status == 'approved' ? Colors.green : Colors.red,
+            ),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('আপডেট ব্যর্থ হয়েছে'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('একটি ত্রুটি ঘটেছে'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 }

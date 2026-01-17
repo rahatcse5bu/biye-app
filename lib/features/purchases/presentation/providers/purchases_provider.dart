@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/network/dio_client.dart';
 import '../../../../core/providers/dio_provider.dart';
 import '../../data/datasources/purchases_first_step_datasource.dart';
 import '../../data/datasources/purchases_second_step_datasource.dart';

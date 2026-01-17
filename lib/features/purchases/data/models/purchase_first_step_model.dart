@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class PurchaseFirstStepModel {
+  final String id;
   final String permanentArea;
   final String presentArea;
   final String zilla;
@@ -12,8 +13,10 @@ class PurchaseFirstStepModel {
   final String? feedback;
   final String bioDetails;
   final String bioUser;
+  final String user;
 
   PurchaseFirstStepModel({
+    required this.id,
     required this.permanentArea,
     required this.presentArea,
     required this.zilla,
@@ -25,10 +28,13 @@ class PurchaseFirstStepModel {
     this.feedback,
     required this.bioDetails,
     required this.bioUser,
+    required this.user,
   });
 
   factory PurchaseFirstStepModel.fromJson(Map<String, dynamic> json) {
+    final bioUserValue = json['bio_user']?.toString() ?? '';
     return PurchaseFirstStepModel(
+      id: json['_id']?.toString() ?? '',
       permanentArea: json['permanent_area']?.toString() ?? '',
       presentArea: json['present_area']?.toString() ?? '',
       zilla: json['zilla']?.toString() ?? '',
@@ -39,7 +45,8 @@ class PurchaseFirstStepModel {
       status: json['status']?.toString() ?? '',
       feedback: json['feedback']?.toString(),
       bioDetails: json['bio_details']?.toString() ?? '',
-      bioUser: json['bio_user']?.toString() ?? '',
+      bioUser: bioUserValue,
+      user: bioUserValue, // Use bio_user as user for updates
     );
   }
 

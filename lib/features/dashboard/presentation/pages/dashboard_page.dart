@@ -7,6 +7,7 @@ import '../../../biodata_edit/presentation/pages/biodata_edit_page.dart';
 import '../../../favorites/presentation/pages/favorites_page.dart';
 import '../../../favorites/presentation/pages/unfavorites_page.dart';
 import '../../../purchases/presentation/pages/purchases_page.dart';
+import '../../../bio_requests/presentation/pages/bio_requests_page.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -734,8 +735,9 @@ class DashboardPage extends ConsumerWidget {
                   title: 'আমার বায়োডাটা অনুরোধসমূহ',
                   onTap: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('বায়োডাটা অনুরোধসমূহ - শীঘ্রই আসছে')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BioRequestsPage()),
                     );
                   },
                 ),
