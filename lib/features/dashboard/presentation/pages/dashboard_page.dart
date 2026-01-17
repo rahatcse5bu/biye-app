@@ -4,6 +4,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../biodata_edit/presentation/pages/biodata_edit_page.dart';
+import '../../../favorites/presentation/pages/favorites_page.dart';
+import '../../../favorites/presentation/pages/unfavorites_page.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -695,8 +697,9 @@ class DashboardPage extends ConsumerWidget {
                   title: 'পছন্দের তালিকা',
                   onTap: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('পছন্দের তালিকা - শীঘ্রই আসছে')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const FavoritesPage()),
                     );
                   },
                 ),
@@ -706,8 +709,9 @@ class DashboardPage extends ConsumerWidget {
                   title: 'অপছন্দের তালিকা',
                   onTap: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('অপছন্দের তালিকা - শীঘ্রই আসছে')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const UnfavoritesPage()),
                     );
                   },
                 ),

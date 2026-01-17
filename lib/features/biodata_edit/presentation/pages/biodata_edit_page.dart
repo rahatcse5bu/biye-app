@@ -275,33 +275,8 @@ class BiodataEditPage extends ConsumerWidget {
                           }
                         }
                       } else {
-                        // Final save and submit for review
-                        try {
-                          await _saveCurrentStep(ref, currentStep);
-                          
-                          // Submit for review
-                          await ref.read(biodataEditRemoteDataSourceProvider).submitForReview();
-                          
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('বায়োডাটা সফলভাবে সংরক্ষিত হয়েছে এবং পর্যালোচনার জন্য জমা দেওয়া হয়েছে'),
-                                backgroundColor: AppTheme.secondaryColor,
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                            Navigator.of(context).pop();
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('সংরক্ষণ ব্যর্থ: ${e.toString()}'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
+                        // Final save and submit for review with bottom sheet confirmation
+                        await _showSubmitForReviewBottomSheet(context, ref, currentStep);
                       }
                     },
                     icon: Icon(
@@ -325,6 +300,124 @@ class BiodataEditPage extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _showSubmitForReviewBottomSheet(
+    BuildContext context,
+    WidgetRef ref,
+    int currentStep,
+  ) async {
+    final result = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Icon(
+              Icons.check_circle_outline,
+              size: 64,
+              color: AppTheme.secondaryColor,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'পর্যালোচনার জন্য জমা দিন',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'আপনার বায়োডাটা পর্যালোচনার জন্য জমা দিতে চাচ্ছেন? জমা দেওয়ার পর অ্যাডমিন যাচাই করে অনুমোদন করবেন।',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.grey[700],
+                      side: BorderSide(color: Colors.grey[300]!),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('বাতিল'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.secondaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text('জমা দিন'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+
+    if (result == true && context.mounted) {
+      // User confirmed, proceed with submission
+      try {
+        await _saveCurrentStep(ref, currentStep);
+
+        // Submit for review
+        await ref.read(biodataEditRemoteDataSourceProvider).submitForReview();
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('বায়োডাটা সফলভাবে সংরক্ষিত হয়েছে এবং পর্যালোচনার জন্য জমা দেওয়া হয়েছে'),
+              backgroundColor: AppTheme.secondaryColor,
+              duration: Duration(seconds: 3),
+            ),
+          );
+          Navigator.of(context).pop();
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('সংরক্ষণ ব্যর্থ: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   Future<void> _saveCurrentStep(WidgetRef ref, int step) async {
