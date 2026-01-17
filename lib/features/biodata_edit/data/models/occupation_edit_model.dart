@@ -29,6 +29,7 @@ class OccupationEditModel {
     return {
       if (id != null) '_id': id,
       if (userId != null) 'user': userId,
+      'user_form': 5, // Step 5 - Occupation
       'occupation': occupation,
       'occupation_details': occupationDetails,
       'monthly_income': monthlyIncome,
@@ -47,6 +48,22 @@ class OccupationEditModel {
     return OccupationEditModel(
       occupationDetails: '',
       monthlyIncome: 0.0,
+    );
+  }
+
+  OccupationEditModel copyWith({
+    String? id,
+    String? userId,
+    List<String>? occupation,
+    String? occupationDetails,
+    double? monthlyIncome,
+  }) {
+    return OccupationEditModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      occupation: occupation ?? this.occupation,
+      occupationDetails: occupationDetails ?? this.occupationDetails,
+      monthlyIncome: monthlyIncome ?? this.monthlyIncome,
     );
   }
 }

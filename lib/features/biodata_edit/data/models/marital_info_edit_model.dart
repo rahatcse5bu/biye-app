@@ -63,6 +63,7 @@ class MaritalInfoEditModel {
     return {
       if (id != null) '_id': id,
       if (userId != null) 'user': userId,
+      'user_form': 6, // Step 6 - Marital Info
       if (isFamilyAgree != null) 'isFamilyAgree': isFamilyAgree,
       if (isPordaToWife != null) 'isPordaToWife': isPordaToWife,
       if (permissionForStudy != null) 'permission_for_study': permissionForStudy,

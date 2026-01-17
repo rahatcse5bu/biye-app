@@ -161,6 +161,7 @@ class EducationalQualificationEditModel {
     return {
       if (id != null) '_id': id,
       if (userId != null) 'user': userId,
+      'user_form': 2, // Step 2 - Educational Qualification
       if (educationMedium != null) 'education_medium': educationMedium,
       if (highestEduLevel != null) 'highest_edu_level': highestEduLevel,
       if (othersEdu != null) 'others_edu': othersEdu,

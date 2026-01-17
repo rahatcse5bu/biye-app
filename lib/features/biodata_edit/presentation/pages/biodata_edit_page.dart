@@ -131,6 +131,91 @@ class BiodataEditPage extends ConsumerWidget {
             ),
           ),
 
+          // Step Navigator
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: SizedBox(
+              height: 80,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                itemCount: steps.length,
+                itemBuilder: (context, index) {
+                  final isActive = index == currentStep;
+                  final isCompleted = index < currentStep;
+                  
+                  return GestureDetector(
+                    onTap: () {
+                      ref.read(currentStepNotifierProvider.notifier).goToStep(index);
+                    },
+                    child: Container(
+                      width: 70,
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isActive
+                                  ? AppTheme.primaryColor
+                                  : isCompleted
+                                      ? AppTheme.secondaryColor
+                                      : Colors.grey[300],
+                              border: Border.all(
+                                color: isActive
+                                    ? AppTheme.primaryColor
+                                    : isCompleted
+                                        ? AppTheme.secondaryColor
+                                        : Colors.grey[400]!,
+                                width: 2,
+                              ),
+                            ),
+                            child: Center(
+                              child: isCompleted
+                                  ? const Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                      size: 20,
+                                    )
+                                  : Text(
+                                      '${index + 1}',
+                                      style: TextStyle(
+                                        color: isActive
+                                            ? Colors.white
+                                            : Colors.grey[600],
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            steps[index].title,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                              color: isActive
+                                  ? AppTheme.primaryColor
+                                  : Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
           // Step Content
           Expanded(
             child: SingleChildScrollView(

@@ -78,25 +78,97 @@ class ExpectedPartnerEditModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      if (id != null) '_id': id,
-      if (userId != null) 'user': userId,
-      'age': {'min': minAge, 'max': maxAge},
-      'color': color,
-      'height': {'min': minHeight, 'max': maxHeight},
-      'educational_qualifications': educationalQualifications,
-      'zilla': zilla,
-      'marital_status': maritalStatus,
-      'occupation': occupation,
-      'economical_condition': economicalCondition,
-      if (expectedCharacteristics != null) 'expected_characteristics': expectedCharacteristics,
-      if (aqidahMadhab != null) 'aqidah_madhab': aqidahMadhab,
-      if (isDivorcedWidow != null) 'isDivorced_Widow': isDivorcedWidow,
-      if (isChild != null) 'isChild': isChild,
-      if (isMasna != null) 'isMasna': isMasna,
-      if (isStudent != null) 'isStudent': isStudent,
-      if (expectedIncome != null) 'expected_income': expectedIncome,
+    final Map<String, dynamic> json = {
+      'user_form': 7,
+      'age': {
+        'min': minAge,
+        'max': maxAge,
+      },
+      'height': {
+        'min': minHeight,
+        'max': maxHeight,
+      },
+      'color': color.where((c) => c.trim().isNotEmpty).toList(),
+      'educational_qualifications': educationalQualifications.where((e) => e.trim().isNotEmpty).toList(),
+      'zilla': zilla.where((z) => z.trim().isNotEmpty).toList(),
+      'marital_status': maritalStatus.where((m) => m.trim().isNotEmpty).toList(),
+      'occupation': occupation.where((o) => o.trim().isNotEmpty).toList(),
+      'economical_condition': economicalCondition.where((e) => e.trim().isNotEmpty).toList(),
     };
+    
+    if (id != null && id!.isNotEmpty) {
+      json['_id'] = id;
+    }
+    if (userId != null && userId!.isNotEmpty) {
+      json['user'] = userId;
+    }
+    if (expectedCharacteristics != null && expectedCharacteristics!.trim().isNotEmpty) {
+      json['expected_characteristics'] = expectedCharacteristics!.trim();
+    }
+    if (aqidahMadhab != null && aqidahMadhab!.trim().isNotEmpty) {
+      json['aqidah_madhab'] = aqidahMadhab!.trim();
+    }
+    if (isDivorcedWidow != null && isDivorcedWidow!.trim().isNotEmpty) {
+      json['isDivorced_Widow'] = isDivorcedWidow!.trim();
+    }
+    if (isChild != null && isChild!.trim().isNotEmpty) {
+      json['isChild'] = isChild!.trim();
+    }
+    if (isMasna != null && isMasna!.trim().isNotEmpty) {
+      json['isMasna'] = isMasna!.trim();
+    }
+    if (isStudent != null && isStudent!.trim().isNotEmpty) {
+      json['isStudent'] = isStudent!.trim();
+    }
+    if (expectedIncome != null) {
+      json['expected_income'] = expectedIncome;
+    }
+    
+    return json;
+  }
+
+  ExpectedPartnerEditModel copyWith({
+    String? id,
+    String? userId,
+    int? minAge,
+    int? maxAge,
+    List<String>? color,
+    double? minHeight,
+    double? maxHeight,
+    List<String>? educationalQualifications,
+    List<String>? zilla,
+    List<String>? maritalStatus,
+    List<String>? occupation,
+    List<String>? economicalCondition,
+    String? expectedCharacteristics,
+    String? aqidahMadhab,
+    String? isDivorcedWidow,
+    String? isChild,
+    String? isMasna,
+    String? isStudent,
+    double? expectedIncome,
+  }) {
+    return ExpectedPartnerEditModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      minAge: minAge ?? this.minAge,
+      maxAge: maxAge ?? this.maxAge,
+      color: color ?? this.color,
+      minHeight: minHeight ?? this.minHeight,
+      maxHeight: maxHeight ?? this.maxHeight,
+      educationalQualifications: educationalQualifications ?? this.educationalQualifications,
+      zilla: zilla ?? this.zilla,
+      maritalStatus: maritalStatus ?? this.maritalStatus,
+      occupation: occupation ?? this.occupation,
+      economicalCondition: economicalCondition ?? this.economicalCondition,
+      expectedCharacteristics: expectedCharacteristics ?? this.expectedCharacteristics,
+      aqidahMadhab: aqidahMadhab ?? this.aqidahMadhab,
+      isDivorcedWidow: isDivorcedWidow ?? this.isDivorcedWidow,
+      isChild: isChild ?? this.isChild,
+      isMasna: isMasna ?? this.isMasna,
+      isStudent: isStudent ?? this.isStudent,
+      expectedIncome: expectedIncome ?? this.expectedIncome,
+    );
   }
 
   static double _toDouble(dynamic value) {

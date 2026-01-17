@@ -30,6 +30,7 @@ class ContactEditModel {
     return {
       if (id != null) '_id': id,
       if (userId != null) 'user': userId,
+      'user_form': 8, // Step 8 - Contact
       'full_name': fullName,
       'family_number': familyNumber,
       'relation': relation,

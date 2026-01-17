@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../../../core/network/dio_client.dart';
 import '../models/general_info_edit_model.dart';
 import '../models/address_edit_model.dart';
@@ -24,8 +25,13 @@ class BiodataEditRemoteDataSource {
         return GeneralInfoEditModel.fromJson(response.data['data']);
       }
       throw Exception('Failed to fetch general info');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return GeneralInfoEditModel.empty();
+      }
+      return GeneralInfoEditModel.empty();
     } catch (e) {
-      throw Exception('Error fetching general info: $e');
+      return GeneralInfoEditModel.empty();
     }
   }
 
@@ -53,8 +59,13 @@ class BiodataEditRemoteDataSource {
         return AddressEditModel.fromJson(response.data['data']);
       }
       throw Exception('Failed to fetch address');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return AddressEditModel.empty();
+      }
+      return AddressEditModel.empty();
     } catch (e) {
-      throw Exception('Error fetching address: $e');
+      return AddressEditModel.empty();
     }
   }
 
@@ -82,8 +93,13 @@ class BiodataEditRemoteDataSource {
         return EducationalQualificationEditModel.fromJson(response.data['data']);
       }
       throw Exception('Failed to fetch educational qualification');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return EducationalQualificationEditModel.empty();
+      }
+      return EducationalQualificationEditModel.empty();
     } catch (e) {
-      throw Exception('Error fetching educational qualification: $e');
+      return EducationalQualificationEditModel.empty();
     }
   }
 
@@ -111,8 +127,13 @@ class BiodataEditRemoteDataSource {
         return FamilyStatusEditModel.fromJson(response.data['data']);
       }
       throw Exception('Failed to fetch family status');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return FamilyStatusEditModel.empty();
+      }
+      return FamilyStatusEditModel.empty();
     } catch (e) {
-      throw Exception('Error fetching family status: $e');
+      return FamilyStatusEditModel.empty();
     }
   }
 
@@ -140,8 +161,13 @@ class BiodataEditRemoteDataSource {
         return PersonalInfoEditModel.fromJson(response.data['data']);
       }
       throw Exception('Failed to fetch personal info');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return PersonalInfoEditModel.empty();
+      }
+      return PersonalInfoEditModel.empty();
     } catch (e) {
-      throw Exception('Error fetching personal info: $e');
+      return PersonalInfoEditModel.empty();
     }
   }
 
@@ -169,8 +195,13 @@ class BiodataEditRemoteDataSource {
         return OccupationEditModel.fromJson(response.data['data']);
       }
       throw Exception('Failed to fetch occupation');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return OccupationEditModel.empty();
+      }
+      return OccupationEditModel.empty();
     } catch (e) {
-      throw Exception('Error fetching occupation: $e');
+      return OccupationEditModel.empty();
     }
   }
 
@@ -198,8 +229,13 @@ class BiodataEditRemoteDataSource {
         return MaritalInfoEditModel.fromJson(response.data['data']);
       }
       throw Exception('Failed to fetch marital info');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return MaritalInfoEditModel.empty();
+      }
+      return MaritalInfoEditModel.empty();
     } catch (e) {
-      throw Exception('Error fetching marital info: $e');
+      return MaritalInfoEditModel.empty();
     }
   }
 
@@ -227,8 +263,21 @@ class BiodataEditRemoteDataSource {
         return ExpectedPartnerEditModel.fromJson(response.data['data']);
       }
       throw Exception('Failed to fetch expected partner');
-    } catch (e) {
+    } on DioException catch (e) {
+      // If 404 or no data found, return empty model
+      if (e.response?.statusCode == 404) {
+        return ExpectedPartnerEditModel.empty();
+      }
+      // For other network errors, return empty model as well
+      if (e.type == DioExceptionType.unknown || 
+          e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.badResponse) {
+        return ExpectedPartnerEditModel.empty();
+      }
       throw Exception('Error fetching expected partner: $e');
+    } catch (e) {
+      // For any other error, return empty model
+      return ExpectedPartnerEditModel.empty();
     }
   }
 
@@ -256,8 +305,13 @@ class BiodataEditRemoteDataSource {
         return ContactEditModel.fromJson(response.data['data']);
       }
       throw Exception('Failed to fetch contact');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return ContactEditModel.empty();
+      }
+      return ContactEditModel.empty();
     } catch (e) {
-      throw Exception('Error fetching contact: $e');
+      return ContactEditModel.empty();
     }
   }
 
@@ -285,8 +339,13 @@ class BiodataEditRemoteDataSource {
         return OngikarNamaEditModel.fromJson(response.data['data']);
       }
       throw Exception('Failed to fetch ongikar nama');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return OngikarNamaEditModel.empty();
+      }
+      return OngikarNamaEditModel.empty();
     } catch (e) {
-      throw Exception('Error fetching ongikar nama: $e');
+      return OngikarNamaEditModel.empty();
     }
   }
 
@@ -309,7 +368,7 @@ class BiodataEditRemoteDataSource {
   // === Location Data ===
   Future<List<Division>> getDivisions() async {
     try {
-      final response = await dioClient.get('/general-info/divisions');
+      final response = await dioClient.get('https://pncnikah.com/divisions.json');
       if (response.data is List) {
         return (response.data as List)
             .map((e) => Division.fromJson(e))
@@ -323,7 +382,7 @@ class BiodataEditRemoteDataSource {
 
   Future<List<District>> getDistricts() async {
     try {
-      final response = await dioClient.get('/general-info/districts');
+      final response = await dioClient.get('https://pncnikah.com/districts.json');
       if (response.data is List) {
         return (response.data as List)
             .map((e) => District.fromJson(e))
@@ -337,7 +396,7 @@ class BiodataEditRemoteDataSource {
 
   Future<List<Upzila>> getUpzilas() async {
     try {
-      final response = await dioClient.get('/general-info/upzilas');
+      final response = await dioClient.get('https://pncnikah.com/upzila.json');
       if (response.data is List) {
         return (response.data as List)
             .map((e) => Upzila.fromJson(e))

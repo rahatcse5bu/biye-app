@@ -64,6 +64,7 @@ class FamilyStatusEditModel {
     return {
       if (id != null) '_id': id,
       if (userId != null) 'user': userId,
+      'user_form': 3, // Step 3 - Family Status
       'father_name': fatherName,
       'father_occupation': fatherOccupation,
       'isFatherAlive': isFatherAlive,

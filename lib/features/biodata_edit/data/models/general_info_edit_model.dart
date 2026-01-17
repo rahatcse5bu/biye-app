@@ -53,6 +53,7 @@ class GeneralInfoEditModel {
     return {
       if (id != null) '_id': id,
       if (userId != null) 'user': userId,
+      'user_form': 0, // Step 0 - General Info
       'bio_type': bioType,
       'isMarriageDone': isMarriageDone,
       'date_of_birth': dateOfBirth.toIso8601String(),

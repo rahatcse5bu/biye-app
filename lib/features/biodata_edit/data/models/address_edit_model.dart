@@ -57,6 +57,7 @@ class AddressEditModel {
     return {
       if (id != null) '_id': id,
       if (userId != null) 'user': userId,
+      'user_form': 1, // Step 1 - Address
       'permanent_address': permanentAddress,
       'present_address': presentAddress,
       'grown_up': grownUp,

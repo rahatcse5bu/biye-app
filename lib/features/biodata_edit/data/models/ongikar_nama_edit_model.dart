@@ -27,6 +27,7 @@ class OngikarNamaEditModel {
     return {
       if (id != null) '_id': id,
       if (userId != null) 'user': userId,
+      'user_form': 9, // Step 9 - Ongikar Nama
       'is_family_know': isFamilyKnow,
       'isTrueData': isTrueData,
       'isAgree': isAgree,

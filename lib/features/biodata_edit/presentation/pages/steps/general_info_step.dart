@@ -16,25 +16,29 @@ class _GeneralInfoStepState extends ConsumerState<GeneralInfoStep> {
   late TextEditingController _heightController;
   late TextEditingController _weightController;
   DateTime? _selectedDate;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
     _heightController = TextEditingController();
     _weightController = TextEditingController();
-    
-    // Load existing data
-    Future.microtask(() {
-      final asyncData = ref.read(generalInfoEditProvider);
-      asyncData.whenData((model) {
+  }
+
+  void _initializeFormData(dynamic model) {
+    if (!_isInitialized && mounted) {
+      _isInitialized = true;
+      _heightController.text = model.height > 0 ? model.height.toString() : '';
+      _weightController.text = model.weight > 0 ? model.weight.toString() : '';
+      _selectedDate = model.dateOfBirth;
+      
+      // Initialize the state provider with loaded data
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ref.read(generalInfoEditNotifierProvider.notifier).updateModel(model);
-          _heightController.text = model.height.toString();
-          _weightController.text = model.weight.toString();
-          _selectedDate = model.dateOfBirth;
         }
       });
-    });
+    }
   }
 
   @override
@@ -46,8 +50,27 @@ class _GeneralInfoStepState extends ConsumerState<GeneralInfoStep> {
 
   @override
   Widget build(BuildContext context) {
-    final model = ref.watch(generalInfoEditNotifierProvider);
+    final asyncModel = ref.watch(generalInfoEditProvider);
+    final currentState = ref.watch(generalInfoEditNotifierProvider);
 
+    return asyncModel.when(
+      data: (loadedModel) {
+        // Initialize form with loaded data
+        _initializeFormData(loadedModel);
+        
+        return _buildForm(currentState);
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(
+        child: Text(
+          'ডেটা লোড করতে ব্যর্থ: $error',
+          style: const TextStyle(color: Colors.red),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForm(dynamic model) {
     return Form(
       key: _formKey,
       child: Column(
@@ -221,6 +244,12 @@ class _GeneralInfoStepState extends ConsumerState<GeneralInfoStep> {
     required String hint,
     required void Function(String?) onChanged,
   }) {
+    // If value exists but not in items, add it to avoid assertion error
+    List<String> dropdownItems = List.from(items);
+    if (value != null && value.isNotEmpty && !items.contains(value)) {
+      dropdownItems.add(value);
+    }
+    
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey[300]!),
@@ -228,14 +257,14 @@ class _GeneralInfoStepState extends ConsumerState<GeneralInfoStep> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: value,
+          value: (value?.isEmpty ?? true) ? null : value,
           isExpanded: true,
           hint: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Text(hint, style: TextStyle(color: Colors.grey[600])),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-          items: items
+          items: dropdownItems
               .map((item) => DropdownMenuItem(
                     value: item,
                     child: Text(item),

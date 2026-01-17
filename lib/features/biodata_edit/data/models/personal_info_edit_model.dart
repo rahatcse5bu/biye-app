@@ -95,6 +95,7 @@ class PersonalInfoEditModel {
     return {
       if (id != null) '_id': id,
       if (userId != null) 'user': userId,
+      'user_form': 4, // Step 4 - Personal Info
       if (outsideClothings != null) 'outside_clothings': outsideClothings,
       if (isBeard != null) 'isBeard': isBeard,
       if (fromBeard != null) 'from_beard': fromBeard,

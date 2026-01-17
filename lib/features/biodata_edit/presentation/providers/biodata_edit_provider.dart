@@ -443,4 +443,10 @@ class CurrentStepNotifier extends StateNotifier<int> {
       state--;
     }
   }
+
+  void goToStep(int step) {
+    if (step >= 0 && step < 10) {
+      state = step;
+    }
+  }
 }
