@@ -6,6 +6,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../biodata_edit/presentation/pages/biodata_edit_page.dart';
 import '../../../favorites/presentation/pages/favorites_page.dart';
 import '../../../favorites/presentation/pages/unfavorites_page.dart';
+import '../../../purchases/presentation/pages/purchases_page.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -721,8 +722,9 @@ class DashboardPage extends ConsumerWidget {
                   title: 'আমার বায়োডাটা ক্রয়সমূহ',
                   onTap: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('বায়োডাটা ক্রয়সমূহ - শীঘ্রই আসছে')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PurchasesPage()),
                     );
                   },
                 ),
