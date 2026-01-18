@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../constants/api_constants.dart';
 import 'interceptors/auth_interceptor.dart';
+import 'interceptors/colorful_logger.dart';
 import 'interceptors/error_interceptor.dart';
 
 class DioClient {
@@ -36,13 +36,14 @@ class DioClient {
     _dio.interceptors.addAll([
       AuthInterceptor(),
       ErrorInterceptor(),
-      PrettyDioLogger(
+      ColorfulDioLogger(
+        request: true,
         requestHeader: true,
         requestBody: true,
         responseBody: true,
         responseHeader: false,
         error: true,
-        compact: true,
+        showStackTrace: true,
       ),
     ]);
   }

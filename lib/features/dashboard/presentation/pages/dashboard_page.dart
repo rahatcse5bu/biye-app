@@ -8,6 +8,7 @@ import '../../../favorites/presentation/pages/favorites_page.dart';
 import '../../../favorites/presentation/pages/unfavorites_page.dart';
 import '../../../purchases/presentation/pages/purchases_page.dart';
 import '../../../bio_requests/presentation/pages/bio_requests_page.dart';
+import '../../../payments/presentation/pages/buy_points_page.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -307,7 +308,12 @@ class DashboardPage extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BuyPointsPage()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 foregroundColor: Colors.white,
