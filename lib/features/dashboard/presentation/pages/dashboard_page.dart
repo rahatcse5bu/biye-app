@@ -9,6 +9,7 @@ import '../../../favorites/presentation/pages/unfavorites_page.dart';
 import '../../../purchases/presentation/pages/purchases_page.dart';
 import '../../../bio_requests/presentation/pages/bio_requests_page.dart';
 import '../../../payments/presentation/pages/buy_points_page.dart';
+import '../../../payments/presentation/pages/payment_history_page.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -753,8 +754,9 @@ class DashboardPage extends ConsumerWidget {
                   title: 'পেমেন্ট এবং রিফান্ড',
                   onTap: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('পেমেন্ট এবং রিফান্ড - শীঘ্রই আসছে')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PaymentHistoryPage()),
                     );
                   },
                 ),
