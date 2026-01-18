@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/biodata_entity.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../favorites/presentation/providers/favorites_provider.dart';
 
-class BiodataCard extends StatelessWidget {
+class BiodataCard extends ConsumerWidget {
   final BiodataEntity biodata;
   final VoidCallback onTap;
-  final VoidCallback? onLike;
-  final bool isLiked;
   
   const BiodataCard({
     super.key,
     required this.biodata,
     required this.onTap,
-    this.onLike,
-    this.isLiked = false,
   });
   
   String _calculateAge(DateTime birthDate) {
@@ -40,13 +39,22 @@ class BiodataCard extends StatelessWidget {
   }
   
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authNotifierProvider);
+    final favoriteState = ref.watch(favoriteToggleProvider);
+    final status = favoriteState.getStatus(biodata.userId); // 'favorited', 'unfavorited', or null
+    final isAuthenticated = authState.maybeWhen(
+      authenticated: (_) => true,
+      orElse: () => false,
+    );
+
     return Card(
-      elevation: 3,
-      shadowColor: Colors.black26,
+      elevation: 2,
+      shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
+      margin: EdgeInsets.zero,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -55,10 +63,10 @@ class BiodataCard extends StatelessWidget {
           children: [
             // Header with gradient and avatar
             Container(
-              height: 100,
+              height: 110,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [const Color(0xFF1976D2), const Color(0xFF42A5F5)],
+                  colors: [AppTheme.primaryColor, AppTheme.primaryColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -68,91 +76,138 @@ class BiodataCard extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  // Gender Avatar
-                  Center(
+                  // Gender Avatar and Info
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // Avatar Circle
                         Container(
-                          width: 50,
-                          height: 50,
-                          padding: const EdgeInsets.all(8),
+                          width: 56,
+                          height: 56,
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withOpacity(0.25),
                           ),
                           child: SvgPicture.asset(
                             biodata.gender == 'মহিলা'
                                 ? 'assets/img/female.svg'
                                 : 'assets/img/male.svg',
-                            // colorFilter: const ColorFilter.mode(
-                            //   Colors.white,
-                            //   BlendMode.srcIn,
-                            // ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'বায়োডাটা নং',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.9),
-                                fontSize: 12,
+                        const SizedBox(width: 14),
+                        // Biodata Info
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'বায়োডাটা নং',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.85),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w400,
+                                ),
                               ),
-                            ),
-                            Text(
-                              _getBiodataNumber(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                              const SizedBox(height: 2),
+                              Text(
+                                _getBiodataNumber(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  // View Count
+                  // View Count Badge
                   Positioned(
                     top: 8,
-                    left: 8,
+                    left: 12,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 10,
+                        vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.visibility, size: 16),
-                          const SizedBox(width: 4),
+                          Icon(Icons.visibility, size: 15, color: AppTheme.primaryColor),
+                          const SizedBox(width: 5),
                           Text(
                             '${biodata.viewsCount ?? 0}',
-                            style: const TextStyle(fontSize: 12),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.primaryColor,
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  // Like Button
-                  if (onLike != null)
+                  // Like/Dislike Buttons (only show when logged in)
+                  if (isAuthenticated)
                     Positioned(
                       top: 8,
                       right: 8,
-                      child: IconButton(
-                        onPressed: onLike,
-                        icon: Icon(
-                          isLiked ? Icons.favorite : Icons.favorite_border,
-                          color: isLiked ? Colors.red : Colors.white,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Dislike Button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: status == 'unfavorited'
+                                  ? Colors.red.withOpacity(0.9)
+                                  : Colors.white.withOpacity(0.9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              onPressed: () {
+                                _showUnfavoriteDialog(context, ref, status);
+                              },
+                              icon: Icon(
+                                status == 'unfavorited' ? Icons.thumb_down : Icons.thumb_down_outlined,
+                                color: status == 'unfavorited' ? Colors.white : Colors.grey[700],
+                                size: 20,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Like Button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: status == 'favorited'
+                                  ? Colors.green.withOpacity(0.9)
+                                  : Colors.white.withOpacity(0.9),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              onPressed: () {
+                                _showFavoriteDialog(context, ref, status);
+                              },
+                              icon: Icon(
+                                status == 'favorited' ? Icons.thumb_up : Icons.thumb_up_outlined,
+                                color: status == 'favorited' ? Colors.white : Colors.grey[700],
+                                size: 20,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   // Featured Badge
@@ -162,18 +217,18 @@ class BiodataCard extends StatelessWidget {
                       right: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                          horizontal: 10,
+                          vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.amber,
+                          color: Colors.amber[400],
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
                           'ফিচারড',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -182,26 +237,26 @@ class BiodataCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Details
+            // Details Section
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
                   _buildInfoRow(
                     'জন্মসন',
                     '${DateFormat('dd/MM/yyyy').format(biodata.dateOfBirth)} [${_calculateAge(biodata.dateOfBirth)} বছর]',
                   ),
-                  const Divider(height: 12),
+                  const SizedBox(height: 10),
                   _buildInfoRow(
                     'উচ্চতা',
                     _formatHeight(biodata.height),
                   ),
-                  const Divider(height: 12),
+                  const SizedBox(height: 10),
                   _buildInfoRow(
                     'গাত্রবর্ন',
                     biodata.screenColor,
                   ),
-                  const Divider(height: 12),
+                  const SizedBox(height: 10),
                   _buildInfoRow(
                     'এলাকা',
                     biodata.maritalStatus,
@@ -211,18 +266,25 @@ class BiodataCard extends StatelessWidget {
             ),
             // View Button
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: ElevatedButton(
                 onPressed: onTap,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 11),
+                  elevation: 2,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(22),
                   ),
                 ),
-                child: const Text('সম্পূর্ণ বায়োডাটা'),
+                child: const Text(
+                  'সম্পূর্ণ বায়োডাটা',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
           ],
@@ -233,29 +295,126 @@ class BiodataCard extends StatelessWidget {
   
   Widget _buildInfoRow(String label, String value) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(
-          flex: 2,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              color: Colors.grey,
-              fontSize: 13,
-            ),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[600],
+            fontSize: 13,
           ),
         ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            color: Colors.black87,
           ),
+          textAlign: TextAlign.end,
         ),
       ],
+    );
+  }
+
+  void _showFavoriteDialog(BuildContext context, WidgetRef ref, String? status) {
+    if (status == 'favorited') {
+      // Already favorited, do nothing or show message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ইতিমধ্যে পছন্দের তালিকায় আছে'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('পছন্দের তালিকায় যোগ করুন?'),
+        content: const Text('এই বায়োডাটা আপনার পছন্দের তালিকায় যোগ করা হবে।'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('বাতিল'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await ref
+                  .read(favoriteToggleProvider.notifier)
+                  .addFavorite(biodata.userId);
+              
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('পছন্দের তালিকায় যোগ করা হয়েছে'),
+                    duration: Duration(seconds: 2),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('যোগ করুন'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUnfavoriteDialog(BuildContext context, WidgetRef ref, String? status) {
+    if (status == 'unfavorited') {
+      // Already unfavorited, do nothing or show message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ইতিমধ্যে অপছন্দের তালিকায় আছে'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('অপছন্দের তালিকায় যোগ করুন?'),
+        content: const Text('এই বায়োডাটা আপনার অপছন্দের তালিকায় যোগ করা হবে।'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('বাতিল'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await ref
+                  .read(favoriteToggleProvider.notifier)
+                  .addUnfavorite(biodata.userId);
+              
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('অপছন্দের তালিকায় যোগ করা হয়েছে'),
+                    duration: Duration(seconds: 2),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('যোগ করুন'),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -3,11 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/extensions.dart';
 import '../providers/biodata_provider.dart';
 import '../../domain/entities/biodata_entity.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../contact_purchase/presentation/providers/contact_purchase_provider.dart';
+import '../../../payments/presentation/pages/bkash_webview_page.dart';
 
 class BiodataDetailPage extends ConsumerStatefulWidget {
   final String biodataId;
@@ -182,9 +186,10 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
               ),
             ),
           ),
+          
           actions: [
             IconButton(
-              icon: const Icon(Icons.share),
+              icon: const Icon(Icons.share, color:Colors.white),
               onPressed: () {
                 context.showSnackBar('শেয়ার ফিচার শীঘ্রই আসছে');
               },
@@ -577,17 +582,29 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
   }
   
   void _showContactDialog(BuildContext context) {
+    final authState = ref.read(authNotifierProvider);
+    
+    authState.when(
+      initial: () => _showLoginDialog(context),
+      loading: () => _showLoginDialog(context),
+      unauthenticated: () => _showLoginDialog(context),
+      authenticated: (user) => _showPurchaseDialog(context, user),
+      error: (message) => _showLoginDialog(context),
+    );
+  }
+
+  void _showLoginDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('যোগাযোগের তথ্য'),
+        title: const Text('লগইন প্রয়োজন'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.lock, size: 48, color: Colors.orange),
             SizedBox(height: 16),
             Text(
-              'যোগাযোগের তথ্য দেখতে আপনাকে লগইন করতে হবে এবং বায়োডাটা ক্রয় করতে হবে।',
+              'যোগাযোগের তথ্য দেখতে আপনাকে প্রথমে লগইন করতে হবে।',
               textAlign: TextAlign.center,
             ),
           ],
@@ -595,18 +612,297 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('বন্ধ করুন'),
+            child: const Text('বাতিল'),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              context.showSnackBar('পেমেন্ট ফিচার শীঘ্রই আসছে');
+              context.go('/login');
             },
-            child: const Text('ক্রয় করুন'),
+            child: const Text('লগইন করুন'),
           ),
         ],
       ),
     );
+  }
+
+  void _showPurchaseDialog(BuildContext context, user) {
+    final biodataState = ref.read(biodataDetailNotifierProvider);
+    
+    biodataState.whenOrNull(
+      loaded: (biodata) async {
+        // Check purchase and bio choice status
+        await ref.read(contactPurchaseProvider.notifier).checkStatus(biodata.userId);
+        
+        if (context.mounted) {
+          _showPurchaseStepDialog(context, user, biodata.userId);
+        }
+      },
+    );
+  }
+
+  void _showPurchaseStepDialog(BuildContext context, user, String bioUserId) {
+    final purchaseState = ref.watch(contactPurchaseProvider);
+    final int userPoints = user.points ?? 0;
+    final int requiredPoints = 70;
+    final int pointsNeeded = requiredPoints - userPoints;
+
+    // Check if already purchased
+    if (purchaseState.alreadyPurchased && purchaseState.contactInfo != null) {
+      _showContactInfoDialog(context, purchaseState.contactInfo!);
+      return;
+    }
+
+    // Determine which step user is on
+    String? status = purchaseState.bioChoiceStatus;
+    bool hasRequest = purchaseState.bioChoiceChecked && status != null;
+
+    String title;
+    IconData icon;
+    Color iconColor;
+    String message;
+    List<Widget> actions;
+
+    if (!hasRequest) {
+      // Step 1: No request sent yet
+      title = 'যোগাযোগের তথ্য অনুরোধ';
+      icon = Icons.send;
+      iconColor = Colors.blue;
+      message = 'প্রথমে এই বায়োডাটার যোগাযোগের তথ্য দেখার অনুরোধ পাঠান।\n\nআপনার অনুরোধ পর্যালোচনা করা হবে।';
+      actions = [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('বাতিল'),
+        ),
+        ElevatedButton(
+          onPressed: purchaseState.isLoading ? null : () async {
+            final success = await ref
+                .read(contactPurchaseProvider.notifier)
+                .sendPurchaseRequest(bioUserId);
+            
+            if (context.mounted) {
+              Navigator.pop(context);
+              if (success) {
+                context.showSnackBar('অনুরোধ সফলভাবে পাঠানো হয়েছে। অনুগ্রহ করে অনুমোদনের জন্য অপেক্ষা করুন।');
+              } else {
+                context.showSnackBar(purchaseState.errorMessage ?? 'অনুরোধ পাঠাতে ব্যর্থ হয়েছে');
+              }
+            }
+          },
+          child: purchaseState.isLoading 
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+              : const Text('অনুরোধ পাঠান'),
+        ),
+      ];
+    } else if (status == 'pending') {
+      // Step 1.5: Request pending
+      title = 'অনুরোধ পর্যালোচনাধীন';
+      icon = Icons.pending;
+      iconColor = Colors.orange;
+      message = 'আপনার অনুরোধ পর্যালোচনাধীন আছে।\n\nঅনুগ্রহ করে অনুমোদনের জন্য অপেক্ষা করুন।';
+      actions = [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('ঠিক আছে'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            await ref.read(contactPurchaseProvider.notifier).checkStatus(bioUserId);
+            if (context.mounted) {
+              _showPurchaseStepDialog(context, user, bioUserId);
+            }
+          },
+          child: const Text('স্ট্যাটাস চেক করুন'),
+        ),
+      ];
+    } else if (status == 'rejected') {
+      // Request rejected
+      title = 'অনুরোধ প্রত্যাখ্যাত';
+      icon = Icons.cancel;
+      iconColor = Colors.red;
+      message = 'দুঃখিত, আপনার অনুরোধ প্রত্যাখ্যান করা হয়েছে।';
+      actions = [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('ঠিক আছে'),
+        ),
+      ];
+    } else if (status == 'approved') {
+      // Step 2: Approved, now can purchase
+      title = 'বায়োডাটা ক্রয়';
+      icon = userPoints >= requiredPoints ? Icons.check_circle : Icons.info;
+      iconColor = userPoints >= requiredPoints ? Colors.green : Colors.orange;
+      message = userPoints >= requiredPoints
+          ? 'আপনার অনুরোধ অনুমোদিত হয়েছে!\n\nআপনার কাছে পর্যাপ্ত পয়েন্ট আছে। বায়োডাটা ক্রয় করতে চান?'
+          : 'আপনার অনুরোধ অনুমোদিত হয়েছে!\n\nএই বায়োডাটা ক্রয় করতে $pointsNeeded পয়েন্ট প্রয়োজন।\n\nআপনার বর্তমান পয়েন্ট: $userPoints\nপ্রয়োজনীয় পয়েন্ট: $requiredPoints';
+      actions = [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('বাতিল'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            
+            if (userPoints >= requiredPoints) {
+              // User has enough points, purchase directly
+              await _purchaseWithPoints(context, bioUserId);
+            } else {
+              // Open bKash payment for points needed
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BkashWebViewPage(
+                    amount: pointsNeeded,
+                    email: user.email ?? '',
+                    bioUser: bioUserId,
+                    purpose: 'second_step',
+                  ),
+                ),
+              );
+            }
+          },
+          child: Text(
+            userPoints >= requiredPoints ? 'ক্রয় করুন' : 'পেমেন্ট করুন',
+          ),
+        ),
+      ];
+    } else {
+      // Unknown status
+      title = 'ত্রুটি';
+      icon = Icons.error;
+      iconColor = Colors.red;
+      message = 'একটি ত্রুটি ঘটেছে। পুনরায় চেষ্টা করুন।';
+      actions = [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('ঠিক আছে'),
+        ),
+      ];
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 48, color: iconColor),
+            const SizedBox(height: 16),
+            Text(message, textAlign: TextAlign.center),
+          ],
+        ),
+        actions: actions,
+      ),
+    );
+  }
+
+  void _showContactInfoDialog(BuildContext context, Map<String, dynamic> contactInfo) {
+    final contact = contactInfo['contact_info'];
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('যোগাযোগের তথ্য'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.check_circle, size: 48, color: Colors.green),
+              const SizedBox(height: 16),
+              const Text(
+                'আপনি ইতিমধ্যে এই বায়োডাটা ক্রয় করেছেন।',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              _buildInfoRow('নাম', contact?['full_name'] ?? 'N/A'),
+              _buildInfoRow('মোবাইল নম্বর', contact?['family_number'] ?? 'N/A'),
+              _buildInfoRow('সম্পর্ক', contact?['relation'] ?? 'N/A'),
+              _buildInfoRow('ইমেইল', contact?['bio_receiving_email'] ?? 'N/A'),
+            ],
+          ),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('ঠিক আছে'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              '$label:',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          Expanded(
+            child: Text(value),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _purchaseWithPoints(BuildContext context, String bioUserId) async {
+    // Show loading
+    if (context.mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    // Call purchase API
+    final success = await ref
+        .read(contactPurchaseProvider.notifier)
+        .purchaseContact(bioUserId);
+
+    // Hide loading
+    if (context.mounted) {
+      Navigator.pop(context);
+    }
+
+    // Show result
+    if (context.mounted) {
+      if (success) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('সফল'),
+            content: const Text('বায়োডাটা ক্রয় সম্পূর্ণ হয়েছে!'),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  // Reload user data to update points
+                  ref.read(authNotifierProvider.notifier).checkAuthStatus();
+                },
+                child: const Text('ঠিক আছে'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        final errorMessage = ref.read(contactPurchaseProvider).errorMessage;
+        context.showSnackBar(errorMessage ?? 'ক্রয় ব্যর্থ হয়েছে');
+      }
+    }
   }
 
   Widget _buildHeaderChip(String text, IconData icon) {

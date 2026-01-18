@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/extensions.dart';
 import '../providers/biodata_provider.dart';
 import '../widgets/biodata_card.dart';
@@ -34,7 +35,10 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('বায়োডাটা সমূহ'),
+        backgroundColor: AppTheme.primaryColor,
+        title: const Text('বায়োডাটা সমূহ', style:TextStyle(
+          color:Colors.white
+        )),
         actions: [
           IconButton(
             icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view),
@@ -47,7 +51,7 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
           Stack(
             children: [
               IconButton(
-                icon: const Icon(Icons.filter_list),
+                icon: const Icon(Icons.filter_list,color:Colors.white),
                 onPressed: () {
                   _showFilterDialog(context);
                 },
@@ -199,20 +203,13 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // Navigate to create biodata page
-          context.showSnackBar('বায়োডাটা তৈরি করুন - Coming Soon!');
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('নতুন বায়োডাটা'),
-      ),
+    
     );
   }
   
   Widget _buildGridView(biodatas) {
     return GridView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: context.screenWidth > 1200
             ? 4
@@ -222,8 +219,8 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
                     ? 2
                     : 1,
         childAspectRatio: 0.65,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+        crossAxisSpacing: 14,
+        mainAxisSpacing: 14,
       ),
       itemCount: biodatas.length,
       itemBuilder: (context, index) {
@@ -266,7 +263,7 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
   
   Widget _buildListView(biodatas) {
     return ListView.builder(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
       itemCount: biodatas.length,
       itemBuilder: (context, index) {
         final biodata = biodatas[index];
@@ -275,7 +272,7 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
           duration: Duration(milliseconds: 200 + (index * 50)),
           curve: Curves.easeOut,
           child: Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 14),
             child: BiodataCard(
               biodata: biodata,
               onTap: () {

@@ -19,4 +19,41 @@ class FavoritesRemoteDataSource {
       throw Exception('Error fetching favorites: $e');
     }
   }
+
+  Future<List<FavoriteModel>> getUnfavorites() async {
+    try {
+      final response = await dioClient.get('/un-favorites');
+      if (response.data['success'] == true) {
+        final List<dynamic> data = response.data['data'] ?? [];
+        return data.map((item) => FavoriteModel.fromJson(item as Map<String, dynamic>)).toList();
+      }
+      throw Exception('Failed to fetch unfavorites');
+    } catch (e) {
+      throw Exception('Error fetching unfavorites: $e');
+    }
+  }
+
+  Future<bool> addFavorite(String bioUser) async {
+    try {
+      final response = await dioClient.post(
+        '/favorites',
+        data: {'bio_user': bioUser},
+      );
+      return response.data['success'] == true;
+    } catch (e) {
+      throw Exception('Error adding favorite: $e');
+    }
+  }
+
+  Future<bool> removeFavorite(String bioUser) async {
+    try {
+      final response = await dioClient.post(
+        '/un-favorites',
+        data: {'bio_user': bioUser},
+      );
+      return response.data['success'] == true;
+    } catch (e) {
+      throw Exception('Error removing favorite: $e');
+    }
+  }
 }

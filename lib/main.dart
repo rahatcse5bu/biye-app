@@ -50,8 +50,52 @@ class MainApp extends ConsumerWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
+
+  @override
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    // Check auth status when app starts
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(authNotifierProvider.notifier).checkAuthStatus();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
+
+    return authState.when(
+      initial: () => const _LoadingScreen(),
+      loading: () => const _LoadingScreen(),
+      authenticated: (_) => const BiodataListPage(),
+      unauthenticated: () => const _WelcomeScreen(),
+      error: (message) => const _WelcomeScreen(),
+    );
+  }
+}
+
+class _LoadingScreen extends StatelessWidget {
+  const _LoadingScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+
+class _WelcomeScreen extends StatelessWidget {
+  const _WelcomeScreen();
 
   @override
   Widget build(BuildContext context) {
