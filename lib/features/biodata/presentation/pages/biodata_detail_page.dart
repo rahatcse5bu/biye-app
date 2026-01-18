@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/extensions.dart';
 import '../providers/biodata_provider.dart';
@@ -94,16 +96,12 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
         SliverAppBar(
           expandedHeight: 250.h,
           pinned: true,
-          backgroundColor: biodata.gender == 'মহিলা'
-              ? const Color(0xFFC2185B)
-              : const Color(0xFF1976D2),
+          backgroundColor:  AppColors.primary,
           flexibleSpace: FlexibleSpaceBar(
             background: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: biodata.gender == 'মহিলা'
-                      ? [const Color(0xFFFF6B9D), const Color(0xFFC2185B)]
-                      : [const Color(0xFF1976D2), const Color(0xFF0D47A1)],
+                  colors: [ AppTheme.primaryColor, AppTheme.primaryColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -116,12 +114,12 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                     // Avatar
                     Container(
                       width: 100.w,
-                      // height: 100.h,
+                      padding: EdgeInsets.all(20.w),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
                         border: Border.all(color: Colors.white, width: 4),
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                             color: Colors.black26,
                             blurRadius: 10,
@@ -129,16 +127,14 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                           ),
                         ],
                       ),
-                      child: ClipOval(
-                        child: Icon(
-                          biodata.gender == 'মহিলা'
-                              ? Icons.female
-                              : Icons.male,
-                          size: 50.sp,
-                          color: biodata.gender == 'মহিলা'
-                              ? const Color(0xFFC2185B)
-                              : const Color(0xFF1976D2),
-                        ),
+                      child: SvgPicture.asset(
+                        biodata.gender == 'মহিলা'
+                            ? 'assets/img/female.svg'
+                            : 'assets/img/male.svg',
+                        // colorFilter: ColorFilter.mode(
+                        // const Color(0xFF1976D2),
+                        //   BlendMode.srcIn,
+                        // ),
                       ),
                     ),
                     SizedBox(height: 16.h),
@@ -161,7 +157,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
           
                     // Age and Type
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      padding: EdgeInsets.symmetric(horizontal: 16.w,),
                       child: Wrap(
                         alignment: WrapAlignment.center,
                         spacing: 12.w,
@@ -180,6 +176,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                         ],
                       ),
                     ),
+                        // SizedBox(height: 8.h),
                   ],
                 ),
               ),
@@ -194,7 +191,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
             ),
           ],
         ),
-        
+            
         // Content
         SliverToBoxAdapter(
           child: Column(

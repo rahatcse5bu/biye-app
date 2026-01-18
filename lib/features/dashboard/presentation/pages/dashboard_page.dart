@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../biodata/presentation/pages/biodata_list_page.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../biodata_edit/presentation/pages/biodata_edit_page.dart';
@@ -687,6 +688,18 @@ class DashboardPage extends ConsumerWidget {
                   icon: Icons.dashboard_outlined,
                   title: 'ড্যাশবোর্ড',
                   onTap: () => Navigator.pop(context),
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.dashboard_outlined,
+                  title: 'Biodata List',
+                  onTap: () {
+                        Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BiodataListPage()),
+                    );
+                  },
                 ),
                 _buildDrawerItem(
                   context,

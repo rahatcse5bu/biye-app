@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/utils/extensions.dart';
 import '../../domain/entities/biodata_entity.dart';
 
 class BiodataCard extends StatelessWidget {
@@ -58,9 +58,7 @@ class BiodataCard extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: biodata.gender == 'মহিলা'
-                      ? [const Color(0xFFFF6B9D), const Color(0xFFC2185B)]
-                      : [const Color(0xFF1976D2), const Color(0xFF0D47A1)],
+                  colors: [const Color(0xFF1976D2), const Color(0xFF42A5F5)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -70,17 +68,28 @@ class BiodataCard extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  // Gender Icon
+                  // Gender Avatar
                   Center(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          biodata.gender == 'মহিলা'
-                              ? Icons.female
-                              : Icons.male,
-                          size: 40,
-                          color: Colors.white,
+                        Container(
+                          width: 50,
+                          height: 50,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.2),
+                          ),
+                          child: SvgPicture.asset(
+                            biodata.gender == 'মহিলা'
+                                ? 'assets/img/female.svg'
+                                : 'assets/img/male.svg',
+                            // colorFilter: const ColorFilter.mode(
+                            //   Colors.white,
+                            //   BlendMode.srcIn,
+                            // ),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Column(

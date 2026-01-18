@@ -39,7 +39,7 @@ class MainApp extends ConsumerWidget {
       builder: (context, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'PNC Nikah',
+          title: 'Biye',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: ThemeMode.light,
@@ -57,7 +57,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PNC Nikah'),
+        title: const Text('Biye'),
       ),
       body: Center(
         child: Column(
@@ -78,7 +78,7 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text(
-              'PNC Nikah App',
+              'Biye App',
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey,

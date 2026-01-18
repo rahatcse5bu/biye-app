@@ -48,6 +48,7 @@ dependencies:
   # WebView for bKash payment
   webview_flutter: ^4.10.0
   url_launcher: ^6.3.1
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -62,9 +63,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
-  # assets:
-  #   - assets/images/
-  #   - assets/icons/
+  assets:
+    - assets/img/
   
   # fonts:
   #   - family: CustomFont
