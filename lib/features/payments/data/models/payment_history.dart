@@ -29,11 +29,19 @@ class PaymentHistory {
   });
 
   factory PaymentHistory.fromJson(Map<String, dynamic> json) {
+    // Handle amount as either int or String from API
+    int parseAmount(dynamic value) {
+      if (value is int) return value;
+      if (value is String) return int.tryParse(value) ?? 0;
+      if (value is double) return value.toInt();
+      return 0;
+    }
+
     return PaymentHistory(
       id: json['id'] as String? ?? json['_id'] as String? ?? '',
       email: json['email'] as String? ?? '',
       points: (json['points'] as num?)?.toDouble() ?? 0.0,
-      amount: json['amount'] as int? ?? 0,
+      amount: parseAmount(json['amount']),
       transactionId: json['transaction_id'] as String? ?? '',
       paymentId: json['payment_id'] as String? ?? '',
       status: json['status'] as String? ?? '',

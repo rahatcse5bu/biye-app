@@ -93,7 +93,16 @@ class BkashPaymentNotifier extends StateNotifier<PaymentState> {
       final success = response['success'] == true;
       if (success) {
         final amount = response['amount'];
-        final points = amount != null ? (amount as num).toDouble() * 1.2 : null;
+        double? points;
+        if (amount != null) {
+          // Handle both String and num types from API
+          if (amount is num) {
+            points = amount.toDouble() * 1.2;
+          } else if (amount is String) {
+            final parsedAmount = double.tryParse(amount);
+            points = parsedAmount != null ? parsedAmount * 1.2 : null;
+          }
+        }
         state = state.copyWith(
           isLoading: false,
           paymentSuccess: true,

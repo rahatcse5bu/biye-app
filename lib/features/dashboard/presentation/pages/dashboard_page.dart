@@ -821,7 +821,7 @@ class DashboardPage extends ConsumerWidget {
             child: Column(
               children: [
                 Text(
-                  'PNC Nikah',
+                  'Biye',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,

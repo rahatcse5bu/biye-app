@@ -104,7 +104,10 @@ final biodataListNotifierProvider =
 });
 
 final biodataDetailNotifierProvider = 
-    StateNotifierProvider<BiodataDetailNotifier, BiodataDetailState>((ref) {
+    StateNotifierProvider.autoDispose.family<BiodataDetailNotifier, BiodataDetailState, String>((ref, biodataId) {
   final useCase = ref.watch(getBiodataByIdUseCaseProvider);
-  return BiodataDetailNotifier(useCase);
+  final notifier = BiodataDetailNotifier(useCase);
+  // Load biodata automatically when provider is created
+  Future.microtask(() => notifier.loadBiodata(biodataId));
+  return notifier;
 });

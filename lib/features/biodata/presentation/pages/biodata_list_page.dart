@@ -217,10 +217,10 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
                 ? 3
                 : context.screenWidth > 600
                     ? 2
-                    : 1,
-        childAspectRatio: 0.65,
-        crossAxisSpacing: 14,
-        mainAxisSpacing: 14,
+                    : 2,
+        childAspectRatio: 0.50,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
       ),
       itemCount: biodatas.length,
       itemBuilder: (context, index) {

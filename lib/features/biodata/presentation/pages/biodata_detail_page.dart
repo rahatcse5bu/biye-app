@@ -31,9 +31,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(biodataDetailNotifierProvider.notifier).loadBiodata(widget.biodataId);
-    });
+    // No need to manually load - the family provider does this automatically
   }
   
   String _calculateAge(DateTime birthDate) {
@@ -59,7 +57,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
   
   @override
   Widget build(BuildContext context) {
-    final biodataState = ref.watch(biodataDetailNotifierProvider);
+    final biodataState = ref.watch(biodataDetailNotifierProvider(widget.biodataId));
     
     return Scaffold(
       body: biodataState.when(
@@ -455,7 +453,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                     if (biodata.expectedLifePartner!.height != null)
                       _buildInfoTile(
                         'উচ্চতা',
-                        '${biodata.expectedLifePartner!.height!.min ?? ''} - ${biodata.expectedLifePartner!.height!.max ?? ''} ফুট',
+                        '${biodata.expectedLifePartner!.height!.min?.toStringAsFixed(1) ?? ''} - ${biodata.expectedLifePartner!.height!.max?.toStringAsFixed(1) ?? ''} ফুট',
                       ),
                     if (biodata.expectedLifePartner!.color != null && biodata.expectedLifePartner!.color!.isNotEmpty)
                       _buildInfoTile('বর্ণ', biodata.expectedLifePartner!.color!.join(', ')),
@@ -633,7 +631,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
   }
 
   void _showPurchaseDialog(BuildContext context, user) {
-    final biodataState = ref.read(biodataDetailNotifierProvider);
+    final biodataState = ref.read(biodataDetailNotifierProvider(widget.biodataId));
     
     biodataState.whenOrNull(
       loaded: (biodata) async {

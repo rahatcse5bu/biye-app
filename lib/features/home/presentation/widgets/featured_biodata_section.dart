@@ -61,7 +61,7 @@ class FeaturedBiodataSection extends ConsumerWidget {
                 );
               }
               return SizedBox(
-                height: 390.h,
+                height: 360,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -91,7 +91,7 @@ class FeaturedBiodataSection extends ConsumerWidget {
               );
             },
             loading: () => SizedBox(
-              height: 420,
+              height: 360,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 12),

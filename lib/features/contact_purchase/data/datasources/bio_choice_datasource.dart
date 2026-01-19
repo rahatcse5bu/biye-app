@@ -54,7 +54,7 @@ class BioChoiceDatasource {
         data: {
           'bio_user': bioUser,
           'bio_details': bioDetails ?? 'মোবাইল এপ থেকে যোগাযোগের তথ্য দেখার অনুরোধ', // Request from mobile app
-          // Don't send status - let backend set default 'pending'
+          'status': 'pending', // Required by backend validation
         },
       );
 

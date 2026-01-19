@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../providers/bkash_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 /// In-app WebView page for bKash payment
 /// Handles the entire payment flow within the app and intercepts callbacks
@@ -207,6 +208,9 @@ class _BkashWebViewPageState extends ConsumerState<BkashWebViewPage> {
 
       if (mounted) {
         if (success) {
+          // Refresh user data to get updated points
+          await ref.read(authNotifierProvider.notifier).checkAuthStatus();
+          
           _showMessage('🎉 পেমেন্ট সফল হয়েছে! পয়েন্ট যোগ হয়েছে।', isError: false);
           Navigator.pop(context, true);
         } else {

@@ -47,8 +47,8 @@ class BioStatsSection extends ConsumerWidget {
   Widget _buildStatsGrid(Map<String, dynamic> stats) {
     final maleCount = stats['পুরুষ'] ?? 0;
     final femaleCount = stats['মহিলা'] ?? 0;
-    final totalCount = maleCount + femaleCount;
-    final completedMarriages = stats['completedMarriages'] ?? 0;
+    final totalCount = stats['total'] ?? (maleCount + femaleCount);
+    final completedMarriages = stats['completedMarriages'] ?? stats['বিয়ে সম্পন্ন'] ?? 0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),

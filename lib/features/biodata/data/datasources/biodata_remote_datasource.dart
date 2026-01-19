@@ -52,38 +52,57 @@ class BiodataRemoteDataSourceImpl implements BiodataRemoteDataSource {
   @override
   Future<BiodataModel> getBiodataById(String biodataId) async {
     try {
-      // First, fetch the biodata from list to get the user_id
+      print('🔍 Fetching biodata for ID: $biodataId');
+      
+      // First, fetch from general-info to get the user_id
+      print('📡 Step 1: Fetching from general-info to get user_id');
       final listResponse = await dioClient.get(
         '/general-info',
-        queryParameters: {'_id': biodataId, 'limit': 1},
+        queryParameters: {
+          'page': 1,
+          'limit': 100, // Get more results to search through
+          '_t': DateTime.now().millisecondsSinceEpoch,
+        },
       );
       
       final List<dynamic> listData = listResponse.data['data'] ?? [];
       
-      if (listData.isEmpty) {
-        throw Exception('Biodata not found');
+      // Find the biodata by _id
+      final biodataItem = listData.firstWhere(
+        (item) => item['_id'] == biodataId,
+        orElse: () => null,
+      );
+      
+      if (biodataItem == null) {
+        throw Exception('Biodata not found with _id: $biodataId');
       }
       
-      final generalInfoData = listData.first;
-      final userId = generalInfoData['user_id']; // Get the integer user_id
+      final userId = biodataItem['user_id'];
       
       if (userId == null) {
-        // Fallback: if no user_id, just return the general info
-        print('No user_id found, returning general info only');
-        return BiodataModel.fromJson(generalInfoData);
+        print('⚠️ No user_id found, returning general info only');
+        return BiodataModel.fromJson(biodataItem);
       }
+      
+      print('👤 Found user_id: $userId for biodata_id: $biodataId');
       
       // Increment view count using watch endpoint
       try {
         await dioClient.get('/general-info/watch/$biodataId');
       } catch (e) {
-        print('Watch endpoint failed: $e');
+        print('⚠️ Watch endpoint failed: $e');
       }
       
       // Now fetch complete biodata with all nested data using user_id
-      final bioDataResponse = await dioClient.get('/bio-data/$userId');
+      print('📡 Step 2: Fetching complete bio-data for user_id: $userId');
+      final bioDataResponse = await dioClient.get(
+        '/bio-data/$userId',
+        queryParameters: {
+          '_t': DateTime.now().millisecondsSinceEpoch,
+        },
+      );
       
-      print('Bio-data API Response: ${bioDataResponse.data}');
+      print('✅ Bio-data API Response received for user_id: $userId');
       
       final responseData = bioDataResponse.data['data'];
       
@@ -91,9 +110,12 @@ class BiodataRemoteDataSourceImpl implements BiodataRemoteDataSource {
         throw Exception('No data received from bio-data endpoint');
       }
       
-      return _parseBiodataResponse(responseData);
+      final parsedModel = _parseBiodataResponse(responseData);
+      print('✅ Successfully parsed biodata for user_id: $userId, biodata_id: ${parsedModel.id}');
+      
+      return parsedModel;
     } catch (e, stackTrace) {
-      print('Error in getBiodataById: $e');
+      print('❌ Error in getBiodataById: $e');
       print('Stack trace: $stackTrace');
       rethrow;
     }
@@ -142,7 +164,7 @@ class BiodataRemoteDataSourceImpl implements BiodataRemoteDataSource {
   
   @override
   Future<Map<String, dynamic>> getBiodataStats() async {
-    final response = await dioClient.get('/bio_data/stats');
+    final response = await dioClient.get('/bio-data/stats');
     return response.data['data'];
   }
 }

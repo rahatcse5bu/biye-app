@@ -76,9 +76,16 @@ class BiodataEditPage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('বায়োডাটা সম্পাদনা'),
+        title: const Text('বায়োডাটা সম্পাদনা', style:TextStyle(color:Colors.white)),
         elevation: 0,
         backgroundColor: AppTheme.primaryColor,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -120,13 +127,7 @@ class BiodataEditPage extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(3),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  steps[currentStep].title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              
               ],
             ),
           ),
@@ -215,7 +216,13 @@ class BiodataEditPage extends ConsumerWidget {
               ),
             ),
           ),
-
+  Text(
+                  steps[currentStep].title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
           // Step Content
           Expanded(
             child: SingleChildScrollView(
