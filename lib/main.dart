@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/app_theme.dart';
-import 'features/biodata/presentation/pages/biodata_list_page.dart';
-import 'features/auth/presentation/pages/login_page.dart';
+import 'features/home/presentation/pages/main_navigation_page.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 
 void main() async {
@@ -74,9 +73,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     return authState.when(
       initial: () => const _LoadingScreen(),
       loading: () => const _LoadingScreen(),
-      authenticated: (_) => const BiodataListPage(),
-      unauthenticated: () => const _WelcomeScreen(),
-      error: (message) => const _WelcomeScreen(),
+      authenticated: (_) => const MainNavigationPage(),
+      unauthenticated: () => const MainNavigationPage(),
+      error: (message) => const MainNavigationPage(),
     );
   }
 }
@@ -89,85 +88,6 @@ class _LoadingScreen extends StatelessWidget {
     return const Scaffold(
       body: Center(
         child: CircularProgressIndicator(),
-      ),
-    );
-  }
-}
-
-class _WelcomeScreen extends StatelessWidget {
-  const _WelcomeScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Biye'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.favorite,
-              size: 100,
-              color: AppTheme.primaryColor,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'স্বাগতম',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Biye App',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 40),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const BiodataListPage(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.list),
-              label: const Text('বায়োডাটা দেখুন'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const LoginPage(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.login),
-              label: const Text('লগইন করুন'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

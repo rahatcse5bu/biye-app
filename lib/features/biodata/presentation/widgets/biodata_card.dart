@@ -107,7 +107,7 @@ class BiodataCard extends ConsumerWidget {
                                 'বায়োডাটা নং',
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.85),
-                                  fontSize: 11,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.w400,
                                 ),
                               ),
@@ -117,8 +117,9 @@ class BiodataCard extends ConsumerWidget {
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 20,
+                                  fontSize: 16,
                                 ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           ),
@@ -166,45 +167,43 @@ class BiodataCard extends ConsumerWidget {
                         children: [
                           // Dislike Button
                           Container(
+                            padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
                               color: status == 'unfavorited'
                                   ? Colors.red.withOpacity(0.9)
                                   : Colors.white.withOpacity(0.9),
                               shape: BoxShape.circle,
                             ),
-                            child: IconButton(
-                              onPressed: () {
+                            child: InkWell(
+                              onTap: () {
                                 _showUnfavoriteDialog(context, ref, status);
                               },
-                              icon: Icon(
+                              child: Icon(
                                 status == 'unfavorited' ? Icons.thumb_down : Icons.thumb_down_outlined,
                                 color: status == 'unfavorited' ? Colors.white : Colors.grey[700],
-                                size: 20,
+                                size: 14,
                               ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 4),
                           // Like Button
                           Container(
+                            padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
                               color: status == 'favorited'
                                   ? Colors.green.withOpacity(0.9)
                                   : Colors.white.withOpacity(0.9),
                               shape: BoxShape.circle,
                             ),
-                            child: IconButton(
-                              onPressed: () {
+                            child: InkWell(
+                              onTap: () {
                                 _showFavoriteDialog(context, ref, status);
                               },
-                              icon: Icon(
+                              child: Icon(
                                 status == 'favorited' ? Icons.thumb_up : Icons.thumb_up_outlined,
                                 color: status == 'favorited' ? Colors.white : Colors.grey[700],
-                                size: 20,
+                                size: 14,
                               ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
                             ),
                           ),
                         ],
@@ -239,34 +238,34 @@ class BiodataCard extends ConsumerWidget {
             ),
             // Details Section
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 children: [
                   _buildInfoRow(
                     'জন্মসন',
-                    '${DateFormat('dd/MM/yyyy').format(biodata.dateOfBirth)} [${_calculateAge(biodata.dateOfBirth)} বছর]',
+                    '${DateFormat('dd/MM/yyyy').format(biodata.dateOfBirth)} [${_calculateAge(biodata.dateOfBirth)}]',
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   _buildInfoRow(
                     'উচ্চতা',
                     _formatHeight(biodata.height),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   _buildInfoRow(
                     'গাত্রবর্ন',
                     biodata.screenColor,
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   _buildInfoRow(
-                    'এলাকা',
-                    biodata.maritalStatus,
+                    'জেলা',
+                    biodata.zilla ?? 'N/A',
                   ),
                 ],
               ),
             ),
             // View Button
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               child: ElevatedButton(
                 onPressed: onTap,
                 style: ElevatedButton.styleFrom(
@@ -302,17 +301,22 @@ class BiodataCard extends ConsumerWidget {
           style: TextStyle(
             fontWeight: FontWeight.w500,
             color: Colors.grey[600],
-            fontSize: 13,
+            fontSize: 12,
           ),
         ),
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 13,
-            color: Colors.black87,
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              color: Colors.black87,
+            ),
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
-          textAlign: TextAlign.end,
         ),
       ],
     );
