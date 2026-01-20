@@ -11,6 +11,7 @@ import '../../../purchases/presentation/pages/purchases_page.dart';
 import '../../../bio_requests/presentation/pages/bio_requests_page.dart';
 import '../../../payments/presentation/pages/buy_points_page.dart';
 import '../../../payments/presentation/pages/payment_history_page.dart';
+import '../../../bio_questions/presentation/pages/bio_questions_screen.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -710,6 +711,18 @@ class DashboardPage extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const BiodataEditPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.question_answer_outlined,
+                  title: 'আমার প্রশ্ন সেট করুন',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BioQuestionsScreen()),
                     );
                   },
                 ),

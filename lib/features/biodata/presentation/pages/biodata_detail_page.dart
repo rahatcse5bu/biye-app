@@ -11,6 +11,7 @@ import '../providers/biodata_provider.dart';
 import '../../domain/entities/biodata_entity.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../contact_purchase/presentation/providers/contact_purchase_provider.dart';
+import '../../../contact_purchase/presentation/widgets/bio_questions_answer_dialog.dart';
 import '../../../payments/presentation/pages/bkash_webview_page.dart';
 
 class BiodataDetailPage extends ConsumerStatefulWidget {
@@ -680,16 +681,50 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
         ),
         ElevatedButton(
           onPressed: purchaseState.isLoading ? null : () async {
-            final success = await ref
+            Navigator.pop(context);
+            
+            // Fetch questions first
+            final questions = await ref
                 .read(contactPurchaseProvider.notifier)
-                .sendPurchaseRequest(bioUserId);
+                .fetchQuestions(bioUserId);
             
             if (context.mounted) {
-              Navigator.pop(context);
-              if (success) {
-                context.showSnackBar('অনুরোধ সফলভাবে পাঠানো হয়েছে। অনুগ্রহ করে অনুমোদনের জন্য অপেক্ষা করুন।');
+              if (questions.isEmpty) {
+                // No questions, send request directly with default message
+                final success = await ref
+                    .read(contactPurchaseProvider.notifier)
+                    .sendPurchaseRequest(bioUserId);
+                
+                if (context.mounted) {
+                  if (success) {
+                    context.showSnackBar('অনুরোধ সফলভাবে পাঠানো হয়েছে। অনুগ্রহ করে অনুমোদনের জন্য অপেক্ষা করুন।');
+                  } else {
+                    context.showSnackBar(purchaseState.errorMessage ?? 'অনুরোধ পাঠাতে ব্যর্থ হয়েছে');
+                  }
+                }
               } else {
-                context.showSnackBar(purchaseState.errorMessage ?? 'অনুরোধ পাঠাতে ব্যর্থ হয়েছে');
+                // Show questions dialog
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => BioQuestionsAnswerDialog(
+                    questions: questions,
+                    onSubmit: (answersString) async {
+                      final success = await ref
+                          .read(contactPurchaseProvider.notifier)
+                          .sendPurchaseRequest(bioUserId, bioDetails: answersString);
+                      
+                      if (context.mounted) {
+                        if (success) {
+                          context.showSnackBar('অনুরোধ সফলভাবে পাঠানো হয়েছে। অনুগ্রহ করে অনুমোদনের জন্য অপেক্ষা করুন।');
+                        } else {
+                          final errorMessage = ref.read(contactPurchaseProvider).errorMessage;
+                          context.showSnackBar(errorMessage ?? 'অনুরোধ পাঠাতে ব্যর্থ হয়েছে');
+                        }
+                      }
+                    },
+                  ),
+                );
               }
             }
           },

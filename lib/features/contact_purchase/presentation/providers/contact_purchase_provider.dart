@@ -104,11 +104,14 @@ class ContactPurchaseNotifier extends StateNotifier<ContactPurchaseState> {
   }
 
   /// Step 1: Send request (create bio choice with pending status)
-  Future<bool> sendPurchaseRequest(String bioUser) async {
+  Future<bool> sendPurchaseRequest(String bioUser, {String? bioDetails}) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      final created = await _bioChoiceDatasource.createBioChoice(bioUser: bioUser);
+      final created = await _bioChoiceDatasource.createBioChoice(
+        bioUser: bioUser,
+        bioDetails: bioDetails,
+      );
       
       if (created) {
         // After creating, update status to pending
@@ -131,6 +134,15 @@ class ContactPurchaseNotifier extends StateNotifier<ContactPurchaseState> {
         errorMessage: e.toString(),
       );
       return false;
+    }
+  }
+
+  /// Fetch questions for a biodata owner
+  Future<List<String>> fetchQuestions(String bioUser) async {
+    try {
+      return await _bioChoiceDatasource.getQuestionsByUser(bioUser);
+    } catch (e) {
+      return [];
     }
   }
 

@@ -63,4 +63,24 @@ class BioChoiceDatasource {
       rethrow;
     }
   }
+
+  /// Fetch dynamic questions for a biodata owner
+  Future<List<String>> getQuestionsByUser(String userId) async {
+    try {
+      final response = await _dioClient.get('/bio-questions/user/$userId');
+      
+      if (response.data['success'] == true && response.data['data'] != null) {
+        final questions = (response.data['data']['questions'] as List<dynamic>?)
+            ?.map((e) => e as String)
+            .toList();
+        return questions ?? [];
+      }
+      
+      // Return empty list if no questions found (backend will handle defaults)
+      return [];
+    } catch (e) {
+      // If fetch fails, return empty list
+      return [];
+    }
+  }
 }
