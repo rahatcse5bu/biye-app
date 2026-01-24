@@ -27,15 +27,49 @@ class BiodataCard extends ConsumerWidget {
     return age.toString();
   }
   
-  String _formatHeight(double heightInCm) {
-    final feet = (heightInCm / 30.48).floor();
-    final inches = ((heightInCm % 30.48) / 2.54).round();
+  String _formatHeight(double height) {
+    // Height is stored in feet (e.g., 5.2 means 5 feet 2 inches)
+    final feet = height.floor();
+    final inches = ((height - feet) * 10).round();
     return '$feet\' $inches\"';
   }
   
   String _getBiodataNumber() {
     final prefix = biodata.gender == 'মহিলা' ? 'PNCF-' : 'PNCM-';
     return '$prefix${biodata.userIdNumber ?? biodata.userId}';
+  }
+  
+  String _getZilla() {
+    // Check biodata.zilla first
+    if (biodata.zilla != null && biodata.zilla!.trim().isNotEmpty) {
+      return biodata.zilla!;
+    }
+    // Then check address.presentZilla
+    if (biodata.address?.presentZilla != null && biodata.address!.presentZilla!.trim().isNotEmpty) {
+      return biodata.address!.presentZilla!;
+    }
+    // Then check address.zilla (permanent)
+    if (biodata.address?.zilla != null && biodata.address!.zilla!.trim().isNotEmpty) {
+      return biodata.address!.zilla!;
+    }
+    // Check upzilla as fallback (some data might store district here)
+    if (biodata.upzilla != null && biodata.upzilla!.trim().isNotEmpty) {
+      return biodata.upzilla!;
+    }
+    if (biodata.address?.presentUpzilla != null && biodata.address!.presentUpzilla!.trim().isNotEmpty) {
+      return biodata.address!.presentUpzilla!;
+    }
+    if (biodata.address?.upzilla != null && biodata.address!.upzilla!.trim().isNotEmpty) {
+      return biodata.address!.upzilla!;
+    }
+    // Check division as last resort
+    if (biodata.address?.presentDivision != null && biodata.address!.presentDivision!.trim().isNotEmpty) {
+      return biodata.address!.presentDivision!;
+    }
+    if (biodata.address?.division != null && biodata.address!.division!.trim().isNotEmpty) {
+      return biodata.address!.division!;
+    }
+    return 'N/A';
   }
   
   @override
@@ -55,15 +89,16 @@ class BiodataCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
       ),
       margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Header with gradient and avatar
             Container(
-              height: 110,
+              height: 95,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [AppTheme.primaryColor, AppTheme.primaryColor],
@@ -78,14 +113,14 @@ class BiodataCard extends ConsumerWidget {
                 children: [
                   // Gender Avatar and Info
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(
                       children: [
                         // Avatar Circle
                         Container(
-                          width: 56,
-                          height: 56,
-                          padding: const EdgeInsets.all(10),
+                          width: 50,
+                          height: 50,
+                          padding: const EdgeInsets.all(9),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white.withOpacity(0.25),
@@ -238,27 +273,27 @@ class BiodataCard extends ConsumerWidget {
             ),
             // Details Section
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
               child: Column(
                 children: [
                   _buildInfoRow(
                     'জন্মসন',
                     '${DateFormat('dd/MM/yyyy').format(biodata.dateOfBirth)} [${_calculateAge(biodata.dateOfBirth)}]',
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   _buildInfoRow(
                     'উচ্চতা',
                     _formatHeight(biodata.height),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   _buildInfoRow(
                     'গাত্রবর্ন',
                     biodata.screenColor,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   _buildInfoRow(
                     'জেলা',
-                    biodata.zilla ?? 'N/A',
+                    _getZilla(),
                   ),
                 ],
               ),
@@ -271,7 +306,7 @@ class BiodataCard extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 11),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(22),
@@ -337,6 +372,7 @@ class BiodataCard extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
         title: const Text('পছন্দের তালিকায় যোগ করুন?'),
         content: const Text('এই বায়োডাটা আপনার পছন্দের তালিকায় যোগ করা হবে।'),
         actions: [
@@ -387,6 +423,7 @@ class BiodataCard extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
         title: const Text('অপছন্দের তালিকায় যোগ করুন?'),
         content: const Text('এই বায়োডাটা আপনার অপছন্দের তালিকায় যোগ করা হবে।'),
         actions: [

@@ -103,6 +103,7 @@ class MainNavigationPage extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
         title: const Text('লগইন প্রয়োজন'),
         content: const Text('এই ফিচার ব্যবহার করতে আপনাকে লগইন করতে হবে।'),
         actions: [

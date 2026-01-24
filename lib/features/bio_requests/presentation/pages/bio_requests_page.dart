@@ -142,7 +142,7 @@ class BioRequestsPage extends ConsumerWidget {
             ),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: _buildRequestsTable(context, requests),
+              child: _buildRequestsTable(context, requests, ref),
             ),
           ],
         ),
@@ -150,7 +150,7 @@ class BioRequestsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildRequestsTable(BuildContext context, List requests) {
+  Widget _buildRequestsTable(BuildContext context, List requests, WidgetRef ref) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Column(
@@ -192,9 +192,9 @@ class BioRequestsPage extends ConsumerWidget {
                       _buildCell('${request.userId}', 100),
                       _buildCell(request.presentAddress, 200),
                       _buildStatusCell(request.statusBangla, request.statusColor, 100),
-                      _buildBioDetailsButton(context, request.bioDetails, 100),
+                      _buildBioDetailsButton(context, request.bioDetails, request, ref, 100),
                       _buildFeedbackButton(context, request.feedback, 100),
-                      _buildActionButtons(context, request),
+                      _buildActionButtons(context, request, ref),
                     ],
                   ),
                 ),
@@ -252,7 +252,7 @@ class BioRequestsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildBioDetailsButton(BuildContext context, String bioDetails, double width) {
+  Widget _buildBioDetailsButton(BuildContext context, String bioDetails, dynamic request, WidgetRef ref, double width) {
     return SizedBox(
       width: width,
       child: Center(
@@ -267,26 +267,68 @@ class BioRequestsPage extends ConsumerWidget {
             icon: const Icon(Icons.article_outlined, color: Colors.white, size: 16),
             padding: EdgeInsets.zero,
             onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Bio Details'),
-                  content: SingleChildScrollView(
-                    child: Text(bioDetails.isEmpty ? 'কোনো বিস্তারিত তথ্য নেই' : bioDetails),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('বন্ধ করুন'),
-                    ),
-                  ],
-                ),
-              );
+              _showBioDetailsDialog(context, bioDetails, request, ref);
             },
           ),
         ),
       ),
     );
+  }
+
+  void _showBioDetailsDialog(BuildContext context, String bioDetails, dynamic request, WidgetRef ref) {
+    if (bioDetails.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+          title: const Text('প্রশ্ন ও উত্তর'),
+          content: const Text('কোনো প্রশ্ন ও উত্তর নেই'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('বন্ধ করুন'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Parse the bio details format: ===question_0==question===answer_0==answer
+    final qaList = _parseBioDetails(bioDetails);
+
+    showDialog(
+      context: context,
+      builder: (context) => _BioDetailsDialogContent(
+        qaList: qaList,
+        request: request,
+        ref: ref,
+        isPending: request.status.toLowerCase() == 'pending',
+      ),
+    );
+  }
+
+  List<Map<String, String>> _parseBioDetails(String bioDetails) {
+    final List<Map<String, String>> qaList = [];
+    
+    // Split by ===question_ to get each Q&A pair
+    final parts = bioDetails.split('===question_');
+    
+    for (var i = 1; i < parts.length; i++) {
+      final part = parts[i];
+      
+      // Extract question number and content
+      final questionMatch = RegExp(r'^\d+==(.+?)===answer_\d+==(.+?)(?===question_|$)').firstMatch(part);
+      
+      if (questionMatch != null) {
+        qaList.add({
+          'question': questionMatch.group(1)?.trim() ?? '',
+          'answer': questionMatch.group(2)?.trim() ?? '',
+        });
+      }
+    }
+    
+    return qaList;
   }
 
   Widget _buildFeedbackButton(BuildContext context, String? feedback, double width) {
@@ -307,6 +349,7 @@ class BioRequestsPage extends ConsumerWidget {
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
+                  insetPadding: const EdgeInsets.symmetric(horizontal: 16),
                   title: const Text('ফিডব্যাক'),
                   content: Text(feedback ?? 'কোনো ফিডব্যাক নেই'),
                   actions: [
@@ -324,7 +367,9 @@ class BioRequestsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, dynamic request) {
+  Widget _buildActionButtons(BuildContext context, dynamic request, WidgetRef ref) {
+    final isPending = request.status.toLowerCase() == 'pending';
+    
     return SizedBox(
       width: 200,
       child: Row(
@@ -361,17 +406,13 @@ class BioRequestsPage extends ConsumerWidget {
             height: 36,
             margin: const EdgeInsets.only(right: 8),
             decoration: BoxDecoration(
-              color: Colors.green.shade400,
+              color: isPending ? Colors.green.shade400 : Colors.grey.shade300,
               borderRadius: BorderRadius.circular(6),
             ),
             child: IconButton(
-              icon: const Icon(Icons.check, color: Colors.white, size: 16),
+              icon: Icon(Icons.check, color: isPending ? Colors.white : Colors.grey, size: 16),
               padding: EdgeInsets.zero,
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('অনুমোদন - শীঘ্রই আসছে')),
-                );
-              },
+              onPressed: isPending ? () => _showApproveRejectDialog(context, request, ref, true) : null,
             ),
           ),
           // Reject Button
@@ -379,21 +420,355 @@ class BioRequestsPage extends ConsumerWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: Colors.red.shade400,
+              color: isPending ? Colors.red.shade400 : Colors.grey.shade300,
               borderRadius: BorderRadius.circular(6),
             ),
             child: IconButton(
-              icon: const Icon(Icons.close, color: Colors.white, size: 16),
+              icon: Icon(Icons.close, color: isPending ? Colors.white : Colors.grey, size: 16),
               padding: EdgeInsets.zero,
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('প্রত্যাখ্যান - শীঘ্রই আসছে')),
-                );
-              },
+              onPressed: isPending ? () => _showApproveRejectDialog(context, request, ref, false) : null,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showApproveRejectDialog(BuildContext context, dynamic request, WidgetRef ref, bool isApprove) {
+    showDialog(
+      context: context,
+      builder: (context) => _ApproveRejectDialogContent(
+        request: request,
+        ref: ref,
+        isApprove: isApprove,
+      ),
+    );
+  }
+}
+
+// Bio Details Dialog with Q&A and Approve/Reject
+class _BioDetailsDialogContent extends StatefulWidget {
+  final List<Map<String, String>> qaList;
+  final dynamic request;
+  final WidgetRef ref;
+  final bool isPending;
+
+  const _BioDetailsDialogContent({
+    required this.qaList,
+    required this.request,
+    required this.ref,
+    required this.isPending,
+  });
+
+  @override
+  State<_BioDetailsDialogContent> createState() => _BioDetailsDialogContentState();
+}
+
+class _BioDetailsDialogContentState extends State<_BioDetailsDialogContent> {
+  final _feedbackController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _feedbackController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleAction(bool isApprove) async {
+    setState(() => _isSubmitting = true);
+
+    final dataSource = widget.ref.read(bioRequestsRemoteDataSourceProvider);
+    final success = await dataSource.updateBioRequestStatus(
+      userId: widget.request.user,
+      status: isApprove ? 'approved' : 'rejected',
+      feedback: _feedbackController.text.trim(),
+    );
+
+    setState(() => _isSubmitting = false);
+
+    if (mounted) {
+      Navigator.pop(context);
+      if (success) {
+        widget.ref.invalidate(bioRequestsProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(isApprove ? 'অনুমোদন সফল হয়েছে' : 'প্রত্যাখ্যান সফল হয়েছে'),
+            backgroundColor: isApprove ? Colors.green : Colors.red,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('কিছু ভুল হয়েছে, আবার চেষ্টা করুন'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: const Text('প্রশ্ন ও উত্তর'),
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.qaList.isEmpty)
+                const Text('কোনো প্রশ্ন ও উত্তর নেই')
+              else
+                ...widget.qaList.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final qa = entry.value;
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryColor,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '${index + 1}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    qa['question'] ?? '',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(color: Colors.grey.shade300),
+                                    ),
+                                    child: Text(
+                                      qa['answer'] ?? '',
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              if (widget.isPending) ...[
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 8),
+                const Text(
+                  'ফিডব্যাক (ঐচ্ছিক):',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _feedbackController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: 'ফিডব্যাক লিখুন...',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+          child: const Text('বন্ধ করুন'),
+        ),
+        if (widget.isPending) ...[
+          ElevatedButton(
+            onPressed: _isSubmitting ? null : () => _handleAction(false),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: _isSubmitting
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('প্রত্যাখ্যান'),
+          ),
+          ElevatedButton(
+            onPressed: _isSubmitting ? null : () => _handleAction(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: _isSubmitting
+                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text('অনুমোদন'),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+// Approve/Reject Dialog
+class _ApproveRejectDialogContent extends StatefulWidget {
+  final dynamic request;
+  final WidgetRef ref;
+  final bool isApprove;
+
+  const _ApproveRejectDialogContent({
+    required this.request,
+    required this.ref,
+    required this.isApprove,
+  });
+
+  @override
+  State<_ApproveRejectDialogContent> createState() => _ApproveRejectDialogContentState();
+}
+
+class _ApproveRejectDialogContentState extends State<_ApproveRejectDialogContent> {
+  final _feedbackController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _feedbackController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSubmit() async {
+    setState(() => _isSubmitting = true);
+
+    final dataSource = widget.ref.read(bioRequestsRemoteDataSourceProvider);
+    final success = await dataSource.updateBioRequestStatus(
+      userId: widget.request.user,
+      status: widget.isApprove ? 'approved' : 'rejected',
+      feedback: _feedbackController.text.trim(),
+    );
+
+    setState(() => _isSubmitting = false);
+
+    if (mounted) {
+      Navigator.pop(context);
+      if (success) {
+        widget.ref.invalidate(bioRequestsProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(widget.isApprove ? 'অনুমোদন সফল হয়েছে' : 'প্রত্যাখ্যান সফল হয়েছে'),
+            backgroundColor: widget.isApprove ? Colors.green : Colors.red,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('কিছু ভুল হয়েছে, আবার চেষ্টা করুন'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: Row(
+        children: [
+          Icon(
+            widget.isApprove ? Icons.check_circle : Icons.cancel,
+            color: widget.isApprove ? Colors.green : Colors.red,
+          ),
+          const SizedBox(width: 8),
+          Text(widget.isApprove ? 'অনুমোদন করুন' : 'প্রত্যাখ্যান করুন'),
+        ],
+      ),
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.isApprove
+                  ? 'আপনি কি এই বায়োডাটা অনুরোধ অনুমোদন করতে চান?'
+                  : 'আপনি কি এই বায়োডাটা অনুরোধ প্রত্যাখ্যান করতে চান?',
+              style: const TextStyle(fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'ফিডব্যাক (ঐচ্ছিক):',
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _feedbackController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'ফিডব্যাক লিখুন...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.all(12),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+          child: const Text('বাতিল'),
+        ),
+        ElevatedButton(
+          onPressed: _isSubmitting ? null : _handleSubmit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: widget.isApprove ? Colors.green : Colors.red,
+            foregroundColor: Colors.white,
+          ),
+          child: _isSubmitting
+              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : Text(widget.isApprove ? 'অনুমোদন' : 'প্রত্যাখ্যান'),
+        ),
+      ],
     );
   }
 }

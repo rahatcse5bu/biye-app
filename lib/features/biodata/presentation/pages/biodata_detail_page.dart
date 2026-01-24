@@ -602,6 +602,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
         title: const Text('লগইন প্রয়োজন'),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
@@ -824,6 +825,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
         title: Text(title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -844,6 +846,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
         title: const Text('যোগাযোগের তথ্য'),
         content: SingleChildScrollView(
           child: Column(
@@ -923,6 +926,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 16),
             title: const Text('সফল'),
             content: const Text('বায়োডাটা ক্রয় সম্পূর্ণ হয়েছে!'),
             actions: [

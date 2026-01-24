@@ -20,4 +20,25 @@ class BioRequestsRemoteDataSource {
       return [];
     }
   }
+
+  Future<bool> updateBioRequestStatus({
+    required String userId,
+    required String status,
+    String? feedback,
+  }) async {
+    try {
+      final response = await _dioClient.put(
+        '/bio-choice-data?type=feedback',
+        data: {
+          'user': userId,
+          'status': status,
+          if (feedback != null && feedback.isNotEmpty) 'feedback': feedback,
+        },
+      );
+      
+      return response.data['success'] == true;
+    } catch (e) {
+      return false;
+    }
+  }
 }

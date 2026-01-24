@@ -560,6 +560,7 @@ class PurchasesPage extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
         title: const Text('ফিডব্যাক এডিট করুন'),
         content: TextField(
           controller: feedbackController,

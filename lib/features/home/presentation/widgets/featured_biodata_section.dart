@@ -61,16 +61,16 @@ class FeaturedBiodataSection extends ConsumerWidget {
                 );
               }
               return SizedBox(
-                height: 360,
+                height: 285,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: biodatas.length > 6 ? 6 : biodatas.length,
                   itemBuilder: (context, index) {
                     final biodata = biodatas[index];
                     return Container(
                       width: 180,
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      margin: const EdgeInsets.only(right: 16),
                       child: BiodataCard(
                         biodata: biodata,
                         onTap: () {
@@ -91,15 +91,15 @@ class FeaturedBiodataSection extends ConsumerWidget {
               );
             },
             loading: () => SizedBox(
-              height: 360,
+              height: 285,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: 3,
                 itemBuilder: (context, index) {
                   return Container(
                     width: 180,
-                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    margin: const EdgeInsets.only(right: 16),
                     child: const BiodataCardShimmer(),
                   );
                 },

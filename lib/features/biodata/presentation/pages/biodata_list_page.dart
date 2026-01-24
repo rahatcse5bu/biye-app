@@ -208,17 +208,28 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
   }
   
   Widget _buildGridView(biodatas) {
+    final screenWidth = context.screenWidth;
+    
+    // Calculate responsive aspect ratio based on screen width
+    double getAspectRatio() {
+      if (screenWidth > 1200) return 0.75; // Large desktop
+      if (screenWidth > 800) return 0.70;  // Desktop/Tablet landscape
+      if (screenWidth > 600) return 0.68;  // Tablet portrait
+      if (screenWidth > 400) return 0.66;  // Large phone
+      return 0.62; // Small phone
+    }
+    
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: context.screenWidth > 1200
+        crossAxisCount: screenWidth > 1200
             ? 4
-            : context.screenWidth > 800
+            : screenWidth > 800
                 ? 3
-                : context.screenWidth > 600
+                : screenWidth > 600
                     ? 2
                     : 2,
-        childAspectRatio: 0.50,
+        childAspectRatio: getAspectRatio(),
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),

@@ -49,9 +49,11 @@ class _BioQuestionsAnswerDialogState extends State<BioQuestionsAnswerDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
       title: const Text('প্রশ্নের উত্তর দিন'),
       content: SizedBox(
-        width: double.maxFinite,
+        width: MediaQuery.of(context).size.width,
         child: Form(
           key: _formKey,
           child: ListView.builder(

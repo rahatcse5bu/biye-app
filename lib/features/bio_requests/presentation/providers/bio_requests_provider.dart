@@ -15,3 +15,13 @@ final bioRequestsProvider = FutureProvider<List<BioShareModel>>((ref) async {
   final dataSource = ref.watch(bioRequestsRemoteDataSourceProvider);
   return await dataSource.getBioRequests();
 });
+
+// Update Bio Request Status Provider
+final updateBioRequestStatusProvider = FutureProvider.family<bool, Map<String, dynamic>>((ref, params) async {
+  final dataSource = ref.watch(bioRequestsRemoteDataSourceProvider);
+  return await dataSource.updateBioRequestStatus(
+    userId: params['userId'] as String,
+    status: params['status'] as String,
+    feedback: params['feedback'] as String?,
+  );
+});
