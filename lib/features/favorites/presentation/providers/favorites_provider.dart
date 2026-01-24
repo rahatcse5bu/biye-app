@@ -41,26 +41,36 @@ class FavoriteToggleState {
   final String? errorMessage;
   final Set<String> favoritedBioUsers; // Track favorited (liked) bio users
   final Set<String> unfavoritedBioUsers; // Track unfavorited (disliked) bio users
+  final Map<String, int> likesCountAdjustment; // Track likes count changes per bioUser
+  final Map<String, int> dislikesCountAdjustment; // Track dislikes count changes per bioUser
 
   FavoriteToggleState({
     this.isLoading = false,
     this.errorMessage,
     Set<String>? favoritedBioUsers,
     Set<String>? unfavoritedBioUsers,
+    Map<String, int>? likesCountAdjustment,
+    Map<String, int>? dislikesCountAdjustment,
   }) : favoritedBioUsers = favoritedBioUsers ?? {},
-       unfavoritedBioUsers = unfavoritedBioUsers ?? {};
+       unfavoritedBioUsers = unfavoritedBioUsers ?? {},
+       likesCountAdjustment = likesCountAdjustment ?? {},
+       dislikesCountAdjustment = dislikesCountAdjustment ?? {};
 
   FavoriteToggleState copyWith({
     bool? isLoading,
     String? errorMessage,
     Set<String>? favoritedBioUsers,
     Set<String>? unfavoritedBioUsers,
+    Map<String, int>? likesCountAdjustment,
+    Map<String, int>? dislikesCountAdjustment,
   }) {
     return FavoriteToggleState(
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
       favoritedBioUsers: favoritedBioUsers ?? this.favoritedBioUsers,
       unfavoritedBioUsers: unfavoritedBioUsers ?? this.unfavoritedBioUsers,
+      likesCountAdjustment: likesCountAdjustment ?? this.likesCountAdjustment,
+      dislikesCountAdjustment: dislikesCountAdjustment ?? this.dislikesCountAdjustment,
     );
   }
 
@@ -69,6 +79,16 @@ class FavoriteToggleState {
     if (favoritedBioUsers.contains(bioUser)) return 'favorited';
     if (unfavoritedBioUsers.contains(bioUser)) return 'unfavorited';
     return null;
+  }
+
+  // Get adjusted likes count
+  int getAdjustedLikesCount(String bioUser, int originalCount) {
+    return originalCount + (likesCountAdjustment[bioUser] ?? 0);
+  }
+
+  // Get adjusted dislikes count
+  int getAdjustedDislikesCount(String bioUser, int originalCount) {
+    return originalCount + (dislikesCountAdjustment[bioUser] ?? 0);
   }
 }
 
@@ -88,13 +108,27 @@ class FavoriteToggleNotifier extends StateNotifier<FavoriteToggleState> {
 
   // Add to favorites (like)
   Future<bool> addFavorite(String bioUser) async {
+    // Check if already was unfavorited (need to decrement dislikes)
+    final wasUnfavorited = state.unfavoritedBioUsers.contains(bioUser);
+    
     // Remove from unfavorited if exists (can't be both)
     final updatedUnfavorited = Set<String>.from(state.unfavoritedBioUsers)..remove(bioUser);
     final updatedFavorited = Set<String>.from(state.favoritedBioUsers)..add(bioUser);
     
+    // Update count adjustments
+    final updatedLikesAdjustment = Map<String, int>.from(state.likesCountAdjustment);
+    final updatedDislikesAdjustment = Map<String, int>.from(state.dislikesCountAdjustment);
+    
+    updatedLikesAdjustment[bioUser] = (updatedLikesAdjustment[bioUser] ?? 0) + 1;
+    if (wasUnfavorited) {
+      updatedDislikesAdjustment[bioUser] = (updatedDislikesAdjustment[bioUser] ?? 0) - 1;
+    }
+    
     state = state.copyWith(
       favoritedBioUsers: updatedFavorited,
       unfavoritedBioUsers: updatedUnfavorited,
+      likesCountAdjustment: updatedLikesAdjustment,
+      dislikesCountAdjustment: updatedDislikesAdjustment,
     );
 
     try {
@@ -102,8 +136,11 @@ class FavoriteToggleNotifier extends StateNotifier<FavoriteToggleState> {
       if (!success) {
         // Revert
         final revertedFavorited = Set<String>.from(state.favoritedBioUsers)..remove(bioUser);
+        final revertedLikesAdjustment = Map<String, int>.from(state.likesCountAdjustment);
+        revertedLikesAdjustment[bioUser] = (revertedLikesAdjustment[bioUser] ?? 0) - 1;
         state = state.copyWith(
           favoritedBioUsers: revertedFavorited,
+          likesCountAdjustment: revertedLikesAdjustment,
           errorMessage: 'Failed to add favorite',
         );
         return false;
@@ -112,8 +149,11 @@ class FavoriteToggleNotifier extends StateNotifier<FavoriteToggleState> {
     } catch (e) {
       // Revert
       final revertedFavorited = Set<String>.from(state.favoritedBioUsers)..remove(bioUser);
+      final revertedLikesAdjustment = Map<String, int>.from(state.likesCountAdjustment);
+      revertedLikesAdjustment[bioUser] = (revertedLikesAdjustment[bioUser] ?? 0) - 1;
       state = state.copyWith(
         favoritedBioUsers: revertedFavorited,
+        likesCountAdjustment: revertedLikesAdjustment,
         errorMessage: e.toString(),
       );
       return false;
@@ -122,13 +162,27 @@ class FavoriteToggleNotifier extends StateNotifier<FavoriteToggleState> {
 
   // Add to unfavorites (dislike)
   Future<bool> addUnfavorite(String bioUser) async {
+    // Check if already was favorited (need to decrement likes)
+    final wasFavorited = state.favoritedBioUsers.contains(bioUser);
+    
     // Remove from favorited if exists (can't be both)
     final updatedFavorited = Set<String>.from(state.favoritedBioUsers)..remove(bioUser);
     final updatedUnfavorited = Set<String>.from(state.unfavoritedBioUsers)..add(bioUser);
     
+    // Update count adjustments
+    final updatedLikesAdjustment = Map<String, int>.from(state.likesCountAdjustment);
+    final updatedDislikesAdjustment = Map<String, int>.from(state.dislikesCountAdjustment);
+    
+    updatedDislikesAdjustment[bioUser] = (updatedDislikesAdjustment[bioUser] ?? 0) + 1;
+    if (wasFavorited) {
+      updatedLikesAdjustment[bioUser] = (updatedLikesAdjustment[bioUser] ?? 0) - 1;
+    }
+    
     state = state.copyWith(
       favoritedBioUsers: updatedFavorited,
       unfavoritedBioUsers: updatedUnfavorited,
+      likesCountAdjustment: updatedLikesAdjustment,
+      dislikesCountAdjustment: updatedDislikesAdjustment,
     );
 
     try {
@@ -136,8 +190,11 @@ class FavoriteToggleNotifier extends StateNotifier<FavoriteToggleState> {
       if (!success) {
         // Revert
         final revertedUnfavorited = Set<String>.from(state.unfavoritedBioUsers)..remove(bioUser);
+        final revertedDislikesAdjustment = Map<String, int>.from(state.dislikesCountAdjustment);
+        revertedDislikesAdjustment[bioUser] = (revertedDislikesAdjustment[bioUser] ?? 0) - 1;
         state = state.copyWith(
           unfavoritedBioUsers: revertedUnfavorited,
+          dislikesCountAdjustment: revertedDislikesAdjustment,
           errorMessage: 'Failed to add unfavorite',
         );
         return false;
@@ -146,8 +203,11 @@ class FavoriteToggleNotifier extends StateNotifier<FavoriteToggleState> {
     } catch (e) {
       // Revert
       final revertedUnfavorited = Set<String>.from(state.unfavoritedBioUsers)..remove(bioUser);
+      final revertedDislikesAdjustment = Map<String, int>.from(state.dislikesCountAdjustment);
+      revertedDislikesAdjustment[bioUser] = (revertedDislikesAdjustment[bioUser] ?? 0) - 1;
       state = state.copyWith(
         unfavoritedBioUsers: revertedUnfavorited,
+        dislikesCountAdjustment: revertedDislikesAdjustment,
         errorMessage: e.toString(),
       );
       return false;

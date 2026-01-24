@@ -200,46 +200,94 @@ class BiodataCard extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Dislike Button
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: status == 'unfavorited'
-                                  ? Colors.red.withOpacity(0.9)
-                                  : Colors.white.withOpacity(0.9),
-                              shape: BoxShape.circle,
-                            ),
-                            child: InkWell(
-                              onTap: () {
-                                _showUnfavoriteDialog(context, ref, status);
-                              },
-                              child: Icon(
-                                status == 'unfavorited' ? Icons.thumb_down : Icons.thumb_down_outlined,
-                                color: status == 'unfavorited' ? Colors.white : Colors.grey[700],
-                                size: 14,
-                              ),
-                            ),
+                          // Dislike Button with count
+                          Builder(
+                            builder: (context) {
+                              final adjustedDislikesCount = favoriteState.getAdjustedDislikesCount(
+                                biodata.userId, 
+                                biodata.dislikesCount ?? 0,
+                              );
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: status == 'unfavorited'
+                                      ? Colors.red.withOpacity(0.9)
+                                      : Colors.white.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: InkWell(
+                                  onTap: () {
+                                    _showUnfavoriteDialog(context, ref, status);
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        status == 'unfavorited' ? Icons.thumb_down : Icons.thumb_down_outlined,
+                                        color: status == 'unfavorited' ? Colors.white : Colors.grey[700],
+                                        size: 14,
+                                      ),
+                                      if (adjustedDislikesCount > 0) ...[
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          '$adjustedDislikesCount',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: status == 'unfavorited' ? Colors.white : Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                           const SizedBox(width: 4),
-                          // Like Button
-                          Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: status == 'favorited'
-                                  ? Colors.green.withOpacity(0.9)
-                                  : Colors.white.withOpacity(0.9),
-                              shape: BoxShape.circle,
-                            ),
-                            child: InkWell(
-                              onTap: () {
-                                _showFavoriteDialog(context, ref, status);
-                              },
-                              child: Icon(
-                                status == 'favorited' ? Icons.thumb_up : Icons.thumb_up_outlined,
-                                color: status == 'favorited' ? Colors.white : Colors.grey[700],
-                                size: 14,
-                              ),
-                            ),
+                          // Like Button with count
+                          Builder(
+                            builder: (context) {
+                              final adjustedLikesCount = favoriteState.getAdjustedLikesCount(
+                                biodata.userId, 
+                                biodata.likesCount ?? 0,
+                              );
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: status == 'favorited'
+                                      ? Colors.green.withOpacity(0.9)
+                                      : Colors.white.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: InkWell(
+                                  onTap: () {
+                                    _showFavoriteDialog(context, ref, status);
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        status == 'favorited' ? Icons.thumb_up : Icons.thumb_up_outlined,
+                                        color: status == 'favorited' ? Colors.white : Colors.grey[700],
+                                        size: 14,
+                                      ),
+                                      if (adjustedLikesCount > 0) ...[
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          '$adjustedLikesCount',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: status == 'favorited' ? Colors.white : Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),

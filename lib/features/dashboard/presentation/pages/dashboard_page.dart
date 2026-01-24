@@ -12,6 +12,12 @@ import '../../../bio_requests/presentation/pages/bio_requests_page.dart';
 import '../../../payments/presentation/pages/buy_points_page.dart';
 import '../../../payments/presentation/pages/payment_history_page.dart';
 import '../../../bio_questions/presentation/pages/bio_questions_screen.dart';
+import '../../../static_pages/presentation/pages/payment_packages_page.dart';
+import '../../../static_pages/presentation/pages/biodata_submit_page.dart';
+import '../../../static_pages/presentation/pages/refund_policy_page.dart';
+import '../../../static_pages/presentation/pages/faq_page.dart';
+import '../../../static_pages/presentation/pages/about_us_page.dart';
+import '../../../static_pages/presentation/pages/contact_us_page.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -805,6 +811,91 @@ class DashboardPage extends ConsumerWidget {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('সেটিংস - শীঘ্রই আসছে')),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+                // Static Pages Section
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                  child: Text(
+                    'অন্যান্য',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.shopping_bag_outlined,
+                  title: 'পেমেন্ট প্যাকেজ',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PaymentPackagesPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.edit_document,
+                  title: 'বায়োডাটা সাবমিট',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BiodataSubmitPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.policy_outlined,
+                  title: 'রিফান্ড পলিসি',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const RefundPolicyPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.help_center_outlined,
+                  title: 'সচরাচর জিজ্ঞাসা',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const FaqPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.info_outline,
+                  title: 'আমাদের সম্পর্কে',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AboutUsPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.contact_support_outlined,
+                  title: 'যোগাযোগ করুন',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ContactUsPage()),
                     );
                   },
                 ),

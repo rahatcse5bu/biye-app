@@ -10,6 +10,7 @@ import '../../../../core/utils/extensions.dart';
 import '../providers/biodata_provider.dart';
 import '../../domain/entities/biodata_entity.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../../contact_purchase/presentation/providers/contact_purchase_provider.dart';
 import '../../../contact_purchase/presentation/widgets/bio_questions_answer_dialog.dart';
 import '../../../payments/presentation/pages/bkash_webview_page.dart';
@@ -212,38 +213,62 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
               // Stats Card
               Padding(
                 padding: EdgeInsets.all(16.w),
-                child: Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16.w),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Expanded(
-                          child: _buildStatItem(
-                            Icons.visibility,
-                            '${biodata.viewsCount ?? 0}',
-                            'Views',
-                          ),
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final favoriteState = ref.watch(favoriteToggleProvider);
+                    final adjustedLikesCount = favoriteState.getAdjustedLikesCount(
+                      biodata.userId, 
+                      biodata.likesCount ?? 0,
+                    );
+                    final adjustedDislikesCount = favoriteState.getAdjustedDislikesCount(
+                      biodata.userId, 
+                      biodata.dislikesCount ?? 0,
+                    );
+                    
+                    return Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(16.w),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Expanded(
+                              child: _buildStatItem(
+                                Icons.visibility,
+                                '${biodata.viewsCount ?? 0}',
+                                'দেখেছেন',
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildStatItem(
+                                Icons.thumb_up,
+                                '$adjustedLikesCount',
+                                'পছন্দ',
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildStatItem(
+                                Icons.thumb_down,
+                                '$adjustedDislikesCount',
+                                'অপছন্দ',
+                              ),
+                            ),
+                            Expanded(
+                              child: _buildStatItem(
+                                Icons.shopping_cart,
+                                '${biodata.purchasesCount ?? 0}',
+                                'কিনেছেন',
+                              ),
+                            ),
+                          ],
                         ),
-                        Expanded(
-                          child: _buildStatItem(
-                            Icons.favorite,
-                            '${biodata.likesCount ?? 0}',
-                            'Likes',
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildStatItem(
-                            Icons.shopping_cart,
-                            '${biodata.purchasesCount ?? 0}',
-                            'Purchased',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
+              
+              // Like/Dislike Buttons
+              _buildLikeDislikeButtons(context, biodata),
               
               // General Info
               _buildSection(
@@ -529,6 +554,166 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
           overflow: TextOverflow.ellipsis,
         ),
       ],
+    );
+  }
+  
+  Widget _buildLikeDislikeButtons(BuildContext context, BiodataEntity biodata) {
+    final authState = ref.watch(authNotifierProvider);
+    final favoriteState = ref.watch(favoriteToggleProvider);
+    final status = favoriteState.getStatus(biodata.userId);
+    final isAuthenticated = authState.maybeWhen(
+      authenticated: (_) => true,
+      orElse: () => false,
+    );
+
+    if (!isAuthenticated) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Card(
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _showFavoriteDialog(context, biodata, status),
+                  icon: Icon(
+                    status == 'favorited' ? Icons.thumb_up : Icons.thumb_up_outlined,
+                    size: 20,
+                  ),
+                  label: Text(status == 'favorited' ? 'পছন্দ করেছেন' : 'পছন্দ করুন'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: status == 'favorited' 
+                        ? Colors.green 
+                        : AppTheme.primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _showUnfavoriteDialog(context, biodata, status),
+                  icon: Icon(
+                    status == 'unfavorited' ? Icons.thumb_down : Icons.thumb_down_outlined,
+                    size: 20,
+                  ),
+                  label: Text(status == 'unfavorited' ? 'অপছন্দ করেছেন' : 'অপছন্দ করুন'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: status == 'unfavorited' 
+                        ? Colors.red 
+                        : Colors.grey[600],
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFavoriteDialog(BuildContext context, BiodataEntity biodata, String? status) {
+    if (status == 'favorited') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ইতিমধ্যে পছন্দের তালিকায় আছে'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('পছন্দের তালিকায় যোগ করুন?'),
+        content: const Text('এই বায়োডাটা আপনার পছন্দের তালিকায় যোগ করা হবে।'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('বাতিল'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await ref
+                  .read(favoriteToggleProvider.notifier)
+                  .addFavorite(biodata.userId);
+              
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('পছন্দের তালিকায় যোগ করা হয়েছে'),
+                    duration: Duration(seconds: 2),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('যোগ করুন'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUnfavoriteDialog(BuildContext context, BiodataEntity biodata, String? status) {
+    if (status == 'unfavorited') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ইতিমধ্যে অপছন্দের তালিকায় আছে'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('অপছন্দের তালিকায় যোগ করুন?'),
+        content: const Text('এই বায়োডাটা আপনার অপছন্দের তালিকায় যোগ করা হবে।'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('বাতিল'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await ref
+                  .read(favoriteToggleProvider.notifier)
+                  .addUnfavorite(biodata.userId);
+              
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('অপছন্দের তালিকায় যোগ করা হয়েছে'),
+                    duration: Duration(seconds: 2),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('যোগ করুন'),
+          ),
+        ],
+      ),
     );
   }
   

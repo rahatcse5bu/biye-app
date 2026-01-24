@@ -70,6 +70,12 @@ class AppTheme {
         borderRadius: BorderRadius.circular(12),
       ),
     ),
+    dialogTheme: DialogThemeData(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
   );
   
   // Dark Theme
@@ -88,6 +94,12 @@ class AppTheme {
       foregroundColor: Colors.white,
       elevation: 0,
       centerTitle: true,
+    ),
+    dialogTheme: DialogThemeData(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
     ),
   );
 }
