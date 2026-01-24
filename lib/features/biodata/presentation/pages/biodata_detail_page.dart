@@ -45,10 +45,13 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
     return age.toString();
   }
   
-  String _formatHeight(double heightInCm) {
-    final feet = (heightInCm / 30.48).floor();
-    final inches = ((heightInCm % 30.48) / 2.54).round();
-    return '$feet\' $inches\" (${heightInCm.toStringAsFixed(0)} সেমি)';
+  String _formatHeight(double height) {
+    // Height is stored in feet (e.g., 5.2 means 5 feet 2 inches)
+    final feet = height.floor();
+    final inches = ((height - feet) * 10).round();
+    // Convert to cm for display: 1 foot = 30.48 cm, 1 inch = 2.54 cm
+    final totalCm = (feet * 30.48 + inches * 2.54).round();
+    return '$feet\' $inches\" ($totalCm সেমি)';
   }
   
   String _getBiodataNumber(BiodataEntity biodata) {
@@ -97,7 +100,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
       slivers: [
         // App Bar with Profile Header
         SliverAppBar(
-          expandedHeight: 250.h,
+          expandedHeight: 280.h,
           pinned: true,
           backgroundColor:  AppColors.primary,
           leading: IconButton(
@@ -185,7 +188,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                         ],
                       ),
                     ),
-                        // SizedBox(height: 8.h),
+                    SizedBox(height: 16.h),
                   ],
                 ),
               ),
