@@ -14,6 +14,9 @@ import '../../../favorites/presentation/providers/favorites_provider.dart';
 import '../../../contact_purchase/presentation/providers/contact_purchase_provider.dart';
 import '../../../contact_purchase/presentation/widgets/bio_questions_answer_dialog.dart';
 import '../../../payments/presentation/pages/bkash_webview_page.dart';
+import '../../../reactions/presentation/widgets/reaction_button.dart';
+import '../../../reactions/presentation/providers/reactions_provider.dart';
+import '../../../reactions/data/models/reaction_model.dart';
 
 class BiodataDetailPage extends ConsumerStatefulWidget {
   final String biodataId;
@@ -210,65 +213,37 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
         SliverToBoxAdapter(
           child: Column(
             children: [
-              // Stats Card
+              // Stats Card with Reactions
               Padding(
                 padding: EdgeInsets.all(16.w),
-                child: Consumer(
-                  builder: (context, ref, child) {
-                    final favoriteState = ref.watch(favoriteToggleProvider);
-                    final adjustedLikesCount = favoriteState.getAdjustedLikesCount(
-                      biodata.userId, 
-                      biodata.likesCount ?? 0,
-                    );
-                    final adjustedDislikesCount = favoriteState.getAdjustedDislikesCount(
-                      biodata.userId, 
-                      biodata.dislikesCount ?? 0,
-                    );
-                    
-                    return Card(
-                      child: Padding(
-                        padding: EdgeInsets.all(16.w),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            Expanded(
-                              child: _buildStatItem(
-                                Icons.visibility,
-                                '${biodata.viewsCount ?? 0}',
-                                'দেখেছেন',
-                              ),
-                            ),
-                            Expanded(
-                              child: _buildStatItem(
-                                Icons.thumb_up,
-                                '$adjustedLikesCount',
-                                'পছন্দ',
-                              ),
-                            ),
-                            Expanded(
-                              child: _buildStatItem(
-                                Icons.thumb_down,
-                                '$adjustedDislikesCount',
-                                'অপছন্দ',
-                              ),
-                            ),
-                            Expanded(
-                              child: _buildStatItem(
-                                Icons.shopping_cart,
-                                '${biodata.purchasesCount ?? 0}',
-                                'কিনেছেন',
-                              ),
-                            ),
-                          ],
+                child: Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16.w),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Expanded(
+                          child: _buildReactionStatItem(context, biodata),
                         ),
-                      ),
-                    );
-                  },
+                        Expanded(
+                          child: _buildStatItem(
+                            Icons.visibility,
+                            '${biodata.viewsCount ?? 0}',
+                            'দেখেছেন',
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildStatItem(
+                            Icons.shopping_cart,
+                            '${biodata.purchasesCount ?? 0}',
+                            'কিনেছেন',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-              
-              // Like/Dislike Buttons
-              _buildLikeDislikeButtons(context, biodata),
               
               // General Info
               _buildSection(
@@ -557,10 +532,427 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
     );
   }
   
+  Widget _buildReactionStatItem(BuildContext context, BiodataEntity biodata) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final reactionState = ref.watch(reactionNotifierProvider(biodata.userId));
+        final counts = reactionState.counts;
+        final currentReaction = reactionState.currentReaction;
+        
+        // Get total count and top reactions
+        final totalCount = counts.fold<int>(0, (sum, c) => sum + c.count);
+        final topReactions = [...counts]
+          ..sort((a, b) => b.count.compareTo(a.count));
+        final displayReactions = topReactions.where((c) => c.count > 0).take(3).toList();
+        
+        return GestureDetector(
+          onTap: totalCount > 0 ? () => _showReactionDetailsSheet(context, counts) : null,
+          onLongPress: () => _showReactionPickerSheet(context, ref, biodata.userId),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (displayReactions.isNotEmpty)
+                SizedBox(
+                  width: (displayReactions.length * 14.w) + 10.w,
+                  height: 24.h,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: displayReactions.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final reaction = entry.value;
+                      return Positioned(
+                        left: index * 12.w,
+                        child: Container(
+                          width: 22.w,
+                          height: 22.h,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 2,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              _getReactionEmoji(reaction.reactionType),
+                              style: TextStyle(fontSize: 12.sp),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                )
+              else
+                Text(
+                  currentReaction != null 
+                      ? _getReactionEmoji(currentReaction.reactionType)
+                      : '👍',
+                  style: TextStyle(fontSize: 24.sp),
+                ),
+              SizedBox(height: 4.h),
+              if (currentReaction != null && totalCount > 1)
+                Text(
+                  'আপনি ও ${totalCount - 1} জন',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12.sp,
+                    color: AppTheme.primaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                )
+              else if (currentReaction != null && totalCount == 1)
+                Text(
+                  'আপনি',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14.sp,
+                    color: AppTheme.primaryColor,
+                  ),
+                )
+              else
+                Text(
+                  '$totalCount',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                  ),
+                ),
+              Text(
+                'রিঅ্যাকশন',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12.sp,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+  
+  void _showReactionPickerSheet(BuildContext context, WidgetRef ref, String bioUserId) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              'রিঅ্যাকশন দিন',
+              style: TextStyle(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: ReactionType.values.map((type) {
+                return InkWell(
+                  onTap: () {
+                    ref.read(reactionNotifierProvider(bioUserId).notifier)
+                        .toggleReaction(type);
+                    Navigator.pop(context);
+                  },
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: Padding(
+                    padding: EdgeInsets.all(8.w),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _getReactionEmoji(type),
+                          style: TextStyle(fontSize: 32.sp),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          _getReactionLabel(type),
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            SizedBox(height: 16.h),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildReactionCounts(BuildContext context, BiodataEntity biodata) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      child: Consumer(
+        builder: (context, ref, child) {
+          final reactionState = ref.watch(reactionNotifierProvider(biodata.userId));
+          final counts = reactionState.counts;
+          
+          // Get total count and top reactions
+          final totalCount = counts.fold<int>(0, (sum, c) => sum + c.count);
+          final topReactions = [...counts]
+            ..sort((a, b) => b.count.compareTo(a.count));
+          final displayReactions = topReactions.where((c) => c.count > 0).take(3).toList();
+          
+          if (totalCount == 0) {
+            return const SizedBox.shrink();
+          }
+          
+          return InkWell(
+            onTap: () => _showReactionDetailsSheet(context, counts),
+            borderRadius: BorderRadius.circular(20.r),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: Colors.grey[800],
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Stacked emoji icons (overlapped like Facebook)
+                  SizedBox(
+                    width: (displayReactions.length * 18.w),
+                    height: 24.h,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: displayReactions.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final reaction = entry.value;
+                        return Positioned(
+                          left: index * 16.w,
+                          child: Container(
+                            width: 22.w,
+                            height: 22.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.grey[800]!, width: 2),
+                            ),
+                            child: Center(
+                              child: Text(
+                                _getReactionEmoji(reaction.reactionType),
+                                style: TextStyle(fontSize: 12.sp),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  Text(
+                    '$totalCount',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+  
+  String _getReactionEmoji(ReactionType type) {
+    switch (type) {
+      case ReactionType.like:
+        return '👍';
+      case ReactionType.dislike:
+        return '👎';
+      case ReactionType.love:
+        return '❤️';
+      case ReactionType.sad:
+        return '😢';
+      case ReactionType.angry:
+        return '😠';
+      case ReactionType.wow:
+        return '😮';
+    }
+  }
+  
+  void _showReactionDetailsSheet(BuildContext context, List<ReactionCountModel> counts) {
+    final totalCount = counts.fold<int>(0, (sum, c) => sum + c.count);
+    final reactionsWithCounts = counts.where((c) => c.count > 0).toList()
+      ..sort((a, b) => b.count.compareTo(a.count));
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: EdgeInsets.all(16.w),
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[600],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            
+            // Horizontal tabs like Facebook
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  // All tab
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    margin: EdgeInsets.only(right: 8.w),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Text(
+                      'All',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                  // Each reaction tab
+                  ...reactionsWithCounts.map((reaction) {
+                    return Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                      margin: EdgeInsets.only(right: 8.w),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(20.r),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            _getReactionEmoji(reaction.reactionType),
+                            style: TextStyle(fontSize: 16.sp),
+                          ),
+                          SizedBox(width: 6.w),
+                          Text(
+                            '${reaction.count}',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
+            ),
+            
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  String _getReactionLabel(ReactionType type) {
+    switch (type) {
+      case ReactionType.like:
+        return 'লাইক';
+      case ReactionType.dislike:
+        return 'ডিসলাইক';
+      case ReactionType.love:
+        return 'ভালোবাসা';
+      case ReactionType.sad:
+        return 'দুঃখিত';
+      case ReactionType.angry:
+        return 'রাগ';
+      case ReactionType.wow:
+        return 'বিস্ময়';
+    }
+  }
+  
+  Widget _buildReactionCount(ReactionType type, int count) {
+    String emoji;
+    
+    switch (type) {
+      case ReactionType.like:
+        emoji = '👍';
+        break;
+      case ReactionType.dislike:
+        emoji = '👎';
+        break;
+      case ReactionType.love:
+        emoji = '❤️';
+        break;
+      case ReactionType.sad:
+        emoji = '😢';
+        break;
+      case ReactionType.angry:
+        emoji = '😠';
+        break;
+      case ReactionType.wow:
+        emoji = '😮';
+        break;
+    }
+    
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(emoji, style: TextStyle(fontSize: 20.sp)),
+        SizedBox(height: 2.h),
+        Text(
+          '$count',
+          style: TextStyle(
+            fontSize: 12.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[700],
+          ),
+        ),
+      ],
+    );
+  }
+  
   Widget _buildLikeDislikeButtons(BuildContext context, BiodataEntity biodata) {
     final authState = ref.watch(authNotifierProvider);
-    final favoriteState = ref.watch(favoriteToggleProvider);
-    final status = favoriteState.getStatus(biodata.userId);
     final isAuthenticated = authState.maybeWhen(
       authenticated: (_) => true,
       orElse: () => false,
@@ -571,50 +963,11 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Card(
-        child: Padding(
-          padding: EdgeInsets.all(16.w),
-          child: Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _showFavoriteDialog(context, biodata, status),
-                  icon: Icon(
-                    status == 'favorited' ? Icons.thumb_up : Icons.thumb_up_outlined,
-                    size: 20,
-                  ),
-                  label: Text(status == 'favorited' ? 'পছন্দ করেছেন' : 'পছন্দ করুন'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: status == 'favorited' 
-                        ? Colors.green 
-                        : AppTheme.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _showUnfavoriteDialog(context, biodata, status),
-                  icon: Icon(
-                    status == 'unfavorited' ? Icons.thumb_down : Icons.thumb_down_outlined,
-                    size: 20,
-                  ),
-                  label: Text(status == 'unfavorited' ? 'অপছন্দ করেছেন' : 'অপছন্দ করুন'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: status == 'unfavorited' 
-                        ? Colors.red 
-                        : Colors.grey[600],
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      child: ReactionButton(
+        bioUserId: biodata.userId,
+        iconSize: 20.0,
+        showCounts: true,
       ),
     );
   }

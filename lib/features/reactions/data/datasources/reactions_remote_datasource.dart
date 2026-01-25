@@ -42,8 +42,14 @@ class ReactionsRemoteDataSource {
       );
       
       if (response.data['success'] == true) {
-        final List<dynamic> data = response.data['data'] ?? [];
-        return data.map((item) => ReactionCountModel.fromJson(item as Map<String, dynamic>)).toList();
+        final Map<String, dynamic> data = response.data['data'] ?? {};
+        // API returns object format: {"like": 0, "love": 1, ...}
+        return data.entries.map((entry) {
+          return ReactionCountModel(
+            reactionType: ReactionType.fromJson(entry.key),
+            count: entry.value as int,
+          );
+        }).toList();
       }
       throw Exception('Failed to fetch reaction counts');
     } catch (e) {
@@ -78,7 +84,7 @@ class ReactionsRemoteDataSource {
   Future<ReactionModel?> getMyReactionForBio(String bioUserId) async {
     try {
       final response = await dioClient.dio.get(
-        '/reactions/my-reaction/$bioUserId',
+        '/reactions/user-reaction/$bioUserId',
       );
       
       if (response.data['success'] == true) {
