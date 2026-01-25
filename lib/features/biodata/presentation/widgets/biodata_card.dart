@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../domain/entities/biodata_entity.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../favorites/presentation/providers/favorites_provider.dart';
+import '../../../reactions/presentation/widgets/reaction_button.dart';
 
 class BiodataCard extends ConsumerWidget {
   final BiodataEntity biodata;
@@ -75,8 +75,6 @@ class BiodataCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
-    final favoriteState = ref.watch(favoriteToggleProvider);
-    final status = favoriteState.getStatus(biodata.userId); // 'favorited', 'unfavorited', or null
     final isAuthenticated = authState.maybeWhen(
       authenticated: (_) => true,
       orElse: () => false,
@@ -192,104 +190,15 @@ class BiodataCard extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  // Like/Dislike Buttons (only show when logged in)
+                  // Reaction Button (only show when logged in)
                   if (isAuthenticated)
                     Positioned(
                       top: 8,
                       right: 8,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Dislike Button with count
-                          Builder(
-                            builder: (context) {
-                              final adjustedDislikesCount = favoriteState.getAdjustedDislikesCount(
-                                biodata.userId, 
-                                biodata.dislikesCount ?? 0,
-                              );
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: status == 'unfavorited'
-                                      ? Colors.red.withOpacity(0.9)
-                                      : Colors.white.withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: InkWell(
-                                  onTap: () {
-                                    _showUnfavoriteDialog(context, ref, status);
-                                  },
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        status == 'unfavorited' ? Icons.thumb_down : Icons.thumb_down_outlined,
-                                        color: status == 'unfavorited' ? Colors.white : Colors.grey[700],
-                                        size: 14,
-                                      ),
-                                      if (adjustedDislikesCount > 0) ...[
-                                        const SizedBox(width: 3),
-                                        Text(
-                                          '$adjustedDislikesCount',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                            color: status == 'unfavorited' ? Colors.white : Colors.grey[700],
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          const SizedBox(width: 4),
-                          // Like Button with count
-                          Builder(
-                            builder: (context) {
-                              final adjustedLikesCount = favoriteState.getAdjustedLikesCount(
-                                biodata.userId, 
-                                biodata.likesCount ?? 0,
-                              );
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: status == 'favorited'
-                                      ? Colors.green.withOpacity(0.9)
-                                      : Colors.white.withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: InkWell(
-                                  onTap: () {
-                                    _showFavoriteDialog(context, ref, status);
-                                  },
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        status == 'favorited' ? Icons.thumb_up : Icons.thumb_up_outlined,
-                                        color: status == 'favorited' ? Colors.white : Colors.grey[700],
-                                        size: 14,
-                                      ),
-                                      if (adjustedLikesCount > 0) ...[
-                                        const SizedBox(width: 3),
-                                        Text(
-                                          '$adjustedLikesCount',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                            color: status == 'favorited' ? Colors.white : Colors.grey[700],
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
+                      child: ReactionButton(
+                        bioUserId: biodata.userId,
+                        iconSize: 20,
+                        showCounts: true,
                       ),
                     ),
                   // Featured Badge
@@ -402,108 +311,6 @@ class BiodataCard extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-
-  void _showFavoriteDialog(BuildContext context, WidgetRef ref, String? status) {
-    if (status == 'favorited') {
-      // Already favorited, do nothing or show message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('ইতিমধ্যে পছন্দের তালিকায় আছে'),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-        title: const Text('পছন্দের তালিকায় যোগ করুন?'),
-        content: const Text('এই বায়োডাটা আপনার পছন্দের তালিকায় যোগ করা হবে।'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('বাতিল'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await ref
-                  .read(favoriteToggleProvider.notifier)
-                  .addFavorite(biodata.userId);
-              
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('পছন্দের তালিকায় যোগ করা হয়েছে'),
-                    duration: Duration(seconds: 2),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('যোগ করুন'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showUnfavoriteDialog(BuildContext context, WidgetRef ref, String? status) {
-    if (status == 'unfavorited') {
-      // Already unfavorited, do nothing or show message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('ইতিমধ্যে অপছন্দের তালিকায় আছে'),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-        title: const Text('অপছন্দের তালিকায় যোগ করুন?'),
-        content: const Text('এই বায়োডাটা আপনার অপছন্দের তালিকায় যোগ করা হবে।'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('বাতিল'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await ref
-                  .read(favoriteToggleProvider.notifier)
-                  .addUnfavorite(biodata.userId);
-              
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('অপছন্দের তালিকায় যোগ করা হয়েছে'),
-                    duration: Duration(seconds: 2),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('যোগ করুন'),
-          ),
-        ],
-      ),
     );
   }
 }
