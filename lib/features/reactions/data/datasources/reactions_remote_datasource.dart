@@ -130,7 +130,7 @@ class ReactionsRemoteDataSource {
       }
       
       final response = await dioClient.dio.get(
-        '/reactions/received',
+        '/reactions/reactions-to-me',
         queryParameters: queryParams,
       );
       

@@ -308,33 +308,59 @@ class _MyReactionsPageState extends ConsumerState<MyReactionsPage>
     );
   }
 
+  String _getReactionEmoji(ReactionType type) {
+    switch (type) {
+      case ReactionType.like:
+        return '👍';
+      case ReactionType.dislike:
+        return '👎';
+      case ReactionType.love:
+        return '❤️';
+      case ReactionType.sad:
+        return '😢';
+      case ReactionType.angry:
+        return '😠';
+      case ReactionType.wow:
+        return '😮';
+    }
+  }
+
   Widget _buildReactionItem(BuildContext context, ReactionModel reaction, WidgetRef ref) {
+    final bioId = reaction.bioId ?? 0;
+    final address = reaction.permanentAddress ?? '';
+    final screenColor = reaction.screenColor ?? '';
+    
     return InkWell(
       onTap: () {
-        // Navigate to biodata detail page
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => BiodataDetailPage(biodataId: reaction.bioUser),
-        //   ),
-        // );
+        if (reaction.bioUser != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BiodataDetailPage(
+                biodataId: reaction.bioUser!,
+                biodataNumber: bioId.toString(),
+              ),
+            ),
+          );
+        }
       },
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         child: Row(
           children: [
-            // Reaction Icon
+            // Reaction Emoji
             Container(
-              width: 40.w,
-              height: 40.h,
+              width: 44.w,
+              height: 44.h,
               decoration: BoxDecoration(
                 color: _getReactionColor(reaction.reactionType).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                _getReactionIcon(reaction.reactionType),
-                color: _getReactionColor(reaction.reactionType),
-                size: 20.sp,
+              child: Center(
+                child: Text(
+                  _getReactionEmoji(reaction.reactionType),
+                  style: TextStyle(fontSize: 22.sp),
+                ),
               ),
             ),
             SizedBox(width: 12.w),
@@ -344,42 +370,53 @@ class _MyReactionsPageState extends ConsumerState<MyReactionsPage>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'বায়োডাটা নং: ${reaction.bioUser}',
+                    'বায়োডাটা নং: $bioId',
                     style: TextStyle(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
                   ),
+                  if (address.isNotEmpty) ...[
+                    SizedBox(height: 2.h),
+                    Text(
+                      address,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                   SizedBox(height: 4.h),
                   Row(
                     children: [
-                      Icon(
-                        _getReactionIcon(reaction.reactionType),
-                        size: 12.sp,
-                        color: _getReactionColor(reaction.reactionType),
+                      Text(
+                        _getReactionEmoji(reaction.reactionType),
+                        style: TextStyle(fontSize: 12.sp),
                       ),
                       SizedBox(width: 4.w),
                       Text(
                         _getReactionLabel(reaction.reactionType),
                         style: TextStyle(
                           fontSize: 12.sp,
-                          color: Colors.grey[600],
+                          color: _getReactionColor(reaction.reactionType),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        '•',
-                        style: TextStyle(color: Colors.grey[400]),
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        _formatDate(reaction.createdAt),
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          color: Colors.grey[500],
+                      if (screenColor.isNotEmpty) ...[
+                        SizedBox(width: 8.w),
+                        Text('•', style: TextStyle(color: Colors.grey[400])),
+                        SizedBox(width: 8.w),
+                        Text(
+                          screenColor,
+                          style: TextStyle(
+                            fontSize: 11.sp,
+                            color: Colors.grey[500],
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ],
@@ -421,7 +458,8 @@ class _MyReactionsPageState extends ConsumerState<MyReactionsPage>
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime? date) {
+    if (date == null) return '';
     final now = DateTime.now();
     final difference = now.difference(date);
 

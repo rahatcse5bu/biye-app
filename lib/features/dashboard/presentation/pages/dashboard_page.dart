@@ -18,6 +18,7 @@ import '../../../static_pages/presentation/pages/refund_policy_page.dart';
 import '../../../static_pages/presentation/pages/faq_page.dart';
 import '../../../static_pages/presentation/pages/about_us_page.dart';
 import '../../../static_pages/presentation/pages/contact_us_page.dart';
+import '../../../reactions/presentation/pages/my_reactions_page.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -753,6 +754,18 @@ class DashboardPage extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const UnfavoritesPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  context,
+                  icon: Icons.emoji_emotions_outlined,
+                  title: 'আমার রিঅ্যাকশন',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const MyReactionsPage()),
                     );
                   },
                 ),

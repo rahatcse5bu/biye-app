@@ -168,83 +168,77 @@ class ReactionButton extends ConsumerWidget {
     final currentReaction = reactionState.currentReaction;
     final counts = reactionState.counts;
 
-    // Get top 3 reactions by count
-    final topReactions = [...counts]..sort((a, b) => b.count.compareTo(a.count));
-    final displayReactions = topReactions.take(3).toList();
+    // Get top 3 reactions by count (only those with count > 0)
+    final topReactions = [...counts]
+      ..sort((a, b) => b.count.compareTo(a.count));
+    final displayReactions = topReactions.where((c) => c.count > 0).take(3).toList();
+    final totalCount = counts.fold<int>(0, (sum, c) => sum + c.count);
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Main reaction button
-        InkWell(
-          onTap: () => _showReactionPicker(context, ref),
-          borderRadius: BorderRadius.circular(20.r),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: currentReaction != null 
-                  ? _getReactionColor(currentReaction.reactionType).withOpacity(0.1)
-                  : Colors.grey[100],
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: currentReaction != null
-                    ? _getReactionColor(currentReaction.reactionType)
-                    : Colors.grey[300]!,
-                width: 1.5,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  currentReaction != null
-                      ? _getReactionEmoji(currentReaction.reactionType)
-                      : '👍',
-                  style: TextStyle(fontSize: iconSize),
-                ),
-                if (currentReaction != null) ...[
-                  SizedBox(width: 6.w),
-                  Text(
-                    _getReactionLabel(currentReaction.reactionType),
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: _getReactionColor(currentReaction.reactionType),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
+    // Facebook-style compact display
+    return GestureDetector(
+      onTap: () => _showReactionPicker(context, ref),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(16.r),
         ),
-        // Display reaction counts
-        if (showCounts && displayReactions.isNotEmpty) ...[
-          SizedBox(width: 12.w),
-          ...displayReactions.map((reactionCount) {
-            return Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _getReactionEmoji(reactionCount.reactionType),
-                    style: TextStyle(fontSize: (iconSize ?? 24.0) * 0.6),
-                  ),
-                  SizedBox(width: 4.w),
-                  Text(
-                    '${reactionCount.count}',
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ],
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Stacked emoji icons
+            if (displayReactions.isNotEmpty)
+              SizedBox(
+                width: (displayReactions.length * 12.w) + 4.w,
+                height: 20.h,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: displayReactions.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final reaction = entry.value;
+                    return Positioned(
+                      left: index * 10.w,
+                      child: Container(
+                        width: 18.w,
+                        height: 18.h,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.black.withOpacity(0.6),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            _getReactionEmoji(reaction.reactionType),
+                            style: TextStyle(fontSize: 10.sp),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              )
+            else
+              Text(
+                currentReaction != null
+                    ? _getReactionEmoji(currentReaction.reactionType)
+                    : '👍',
+                style: TextStyle(fontSize: 14.sp),
               ),
-            );
-          }).toList(),
-        ],
-      ],
+            SizedBox(width: 4.w),
+            Text(
+              '$totalCount',
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
