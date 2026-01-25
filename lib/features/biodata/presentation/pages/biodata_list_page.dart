@@ -5,7 +5,7 @@ import '../../../../core/utils/extensions.dart';
 import '../providers/biodata_provider.dart';
 import '../widgets/biodata_card.dart';
 import '../widgets/biodata_shimmer.dart';
-import '../widgets/biodata_filter_dialog.dart';
+import '../widgets/biodata_filter_dialog_comprehensive.dart';
 import 'biodata_detail_page.dart';
 import '../../domain/entities/biodata_entity.dart';
 
@@ -320,7 +320,7 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
   void _showFilterDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => BiodataFilterDialog(
+      builder: (context) => ComprehensiveBiodataFilterDialog(
         currentFilters: _activeFilters,
         onApplyFilters: (filters) {
           setState(() {
