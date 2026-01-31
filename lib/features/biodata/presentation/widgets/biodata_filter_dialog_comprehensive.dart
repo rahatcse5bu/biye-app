@@ -843,38 +843,198 @@ class _ComprehensiveBiodataFilterDialogState
           ),
           SizedBox(height: 8.h),
         ],
-        // Dropdown to add more items
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 12.w),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[400]!),
-            borderRadius: BorderRadius.circular(8.r),
+        // Searchable dropdown button
+        InkWell(
+          onTap: () => _showSearchableDropdown(
+            context,
+            title,
+            items.where((item) => !selectedItems.contains(item)).toList(),
+            (value) => onItemToggle(value, true),
           ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              isExpanded: true,
-              hint: Text(
-                selectedItems.isEmpty ? title : 'আরো যোগ করুন...',
-                style: TextStyle(fontSize: 14.sp),
-              ),
-              value: null,
-              items: items
-                  .where((item) => !selectedItems.contains(item))
-                  .map((String item) {
-                return DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item, style: TextStyle(fontSize: 14.sp)),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  onItemToggle(value, true);
-                }
-              },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey[400]!),
+              borderRadius: BorderRadius.circular(8.r),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  selectedItems.isEmpty ? title : 'আরো যোগ করুন...',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
+              ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  void _showSearchableDropdown(
+    BuildContext context,
+    String title,
+    List<String> items,
+    void Function(String) onSelect,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+      ),
+      builder: (context) {
+        return _SearchableDropdownSheet(
+          title: title,
+          items: items,
+          onSelect: (value) {
+            onSelect(value);
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _SearchableDropdownSheet extends StatefulWidget {
+  final String title;
+  final List<String> items;
+  final void Function(String) onSelect;
+
+  const _SearchableDropdownSheet({
+    required this.title,
+    required this.items,
+    required this.onSelect,
+  });
+
+  @override
+  State<_SearchableDropdownSheet> createState() => _SearchableDropdownSheetState();
+}
+
+class _SearchableDropdownSheetState extends State<_SearchableDropdownSheet> {
+  final _searchController = TextEditingController();
+  List<String> _filteredItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _filteredItems = widget.items;
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterItems(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredItems = widget.items;
+      } else {
+        _filteredItems = widget.items
+            .where((item) => item.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.6,
+      padding: EdgeInsets.only(
+        top: 16.h,
+        left: 16.w,
+        right: 16.w,
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle bar
+          Center(
+            child: Container(
+              width: 40.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          // Title
+          Text(
+            widget.title,
+            style: TextStyle(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          // Search field
+          TextField(
+            controller: _searchController,
+            onChanged: _filterItems,
+            decoration: InputDecoration(
+              hintText: 'অনুসন্ধান করুন...',
+              prefixIcon: Icon(Icons.search, size: 20.sp),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(Icons.clear, size: 20.sp),
+                      onPressed: () {
+                        _searchController.clear();
+                        _filterItems('');
+                      },
+                    )
+                  : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          // Items list
+          Expanded(
+            child: _filteredItems.isEmpty
+                ? Center(
+                    child: Text(
+                      'কোনো ফলাফল পাওয়া যায়নি',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _filteredItems.length,
+                    itemBuilder: (context, index) {
+                      final item = _filteredItems[index];
+                      return ListTile(
+                        title: Text(
+                          item,
+                          style: TextStyle(fontSize: 14.sp),
+                        ),
+                        onTap: () => widget.onSelect(item),
+                        dense: true,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        hoverColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
