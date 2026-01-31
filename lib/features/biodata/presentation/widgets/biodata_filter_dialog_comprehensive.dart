@@ -751,34 +751,34 @@ class _ComprehensiveBiodataFilterDialogState
   Widget _buildCheckboxGroup(List<String> items, Set<String> selectedSet) {
     return Wrap(
       spacing: 8.w,
-      runSpacing: 4.h,
+      runSpacing: 8.h,
       children: items.map((item) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: MediaQuery.of(context).size.width * 0.4,
-              child: CheckboxListTile(
-                title: Text(
-                  item,
-                  style: TextStyle(fontSize: 12.sp),
-                ),
-                value: selectedSet.contains(item),
-                onChanged: (bool? value) {
-                  setState(() {
-                    if (value == true) {
-                      selectedSet.add(item);
-                    } else {
-                      selectedSet.remove(item);
-                    }
-                  });
-                },
-                controlAffinity: ListTileControlAffinity.leading,
-                contentPadding: EdgeInsets.zero,
-                dense: true,
-              ),
-            ),
-          ],
+        final isSelected = selectedSet.contains(item);
+        return FilterChip(
+          label: Text(item),
+          selected: isSelected,
+          onSelected: (selected) {
+            setState(() {
+              if (selected) {
+                selectedSet.add(item);
+              } else {
+                selectedSet.remove(item);
+              }
+            });
+          },
+          selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+          checkmarkColor: Theme.of(context).primaryColor,
+          backgroundColor: Colors.grey[100],
+          side: BorderSide(
+            color: isSelected 
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
+                : Colors.grey[300]!,
+          ),
+          labelStyle: TextStyle(
+            fontSize: 13.sp,
+            color: isSelected ? Theme.of(context).primaryColor : Colors.grey[700],
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         );
       }).toList(),
     );
@@ -1002,7 +1002,7 @@ class _SearchableDropdownSheetState extends State<_SearchableDropdownSheet> {
             ),
           ),
           SizedBox(height: 12.h),
-          // Items list
+          // Items list as selectable chips
           Expanded(
             child: _filteredItems.isEmpty
                 ? Center(
@@ -1014,23 +1014,23 @@ class _SearchableDropdownSheetState extends State<_SearchableDropdownSheet> {
                       ),
                     ),
                   )
-                : ListView.builder(
-                    itemCount: _filteredItems.length,
-                    itemBuilder: (context, index) {
-                      final item = _filteredItems[index];
-                      return ListTile(
-                        title: Text(
-                          item,
-                          style: TextStyle(fontSize: 14.sp),
-                        ),
-                        onTap: () => widget.onSelect(item),
-                        dense: true,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        hoverColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                      );
-                    },
+                : SingleChildScrollView(
+                    child: Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.h,
+                      children: _filteredItems.map((item) {
+                        return ActionChip(
+                          label: Text(
+                            item,
+                            style: TextStyle(fontSize: 13.sp),
+                          ),
+                          onPressed: () => widget.onSelect(item),
+                          backgroundColor: Colors.grey[100],
+                          side: BorderSide(color: Colors.grey[300]!),
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                        );
+                      }).toList(),
+                    ),
                   ),
           ),
         ],
