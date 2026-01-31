@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.pncsoft.biye_app"
+    namespace = "com.pncsoft.biye"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.pncsoft.biye_app"
+        applicationId = "com.pncsoft.biye"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

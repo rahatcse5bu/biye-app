@@ -1,4 +1,4 @@
-name: pnc_nikah_app
+name: biye
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.1.0
@@ -42,7 +42,7 @@ dependencies:
   
   # Utils
   equatable: ^2.0.7
-  intl: ^0.19.0
+  intl: ^0.20.2
   
   # WebView for bKash payment
   webview_flutter: ^4.10.0
