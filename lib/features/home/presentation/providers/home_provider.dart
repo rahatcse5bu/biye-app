@@ -22,8 +22,8 @@ final featuredBiodataProvider = FutureProvider<List<BiodataEntity>>((ref) async 
   final remoteDataSource = ref.watch(biodataRemoteDataSourceProvider);
   try {
     final biodatas = await remoteDataSource.getBiodatas(
-      isFeatured: true,
       limit: 10,
+      filters: {'isFeatured': true},
     );
     return biodatas.map((model) => model.toEntity()).toList();
   } catch (e) {

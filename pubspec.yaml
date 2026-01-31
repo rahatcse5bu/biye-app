@@ -65,6 +65,7 @@ flutter:
   
   assets:
     - assets/img/
+    - assets/data/
   
   # fonts:
   #   - family: CustomFont

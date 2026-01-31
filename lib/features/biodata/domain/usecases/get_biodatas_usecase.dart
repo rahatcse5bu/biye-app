@@ -14,6 +14,7 @@ class GetBiodatasUseCase implements UseCase<List<BiodataEntity>, GetBiodatasPara
     return await repository.getBiodatas(
       page: params.page,
       limit: params.limit,
+      filters: params.filters,
     );
   }
 }
@@ -21,9 +22,11 @@ class GetBiodatasUseCase implements UseCase<List<BiodataEntity>, GetBiodatasPara
 class GetBiodatasParams {
   final int page;
   final int limit;
+  final Map<String, dynamic>? filters;
   
   GetBiodatasParams({
     this.page = 1,
     this.limit = 20,
+    this.filters,
   });
 }

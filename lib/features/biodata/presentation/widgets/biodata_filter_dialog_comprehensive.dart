@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../../../../core/services/address_service.dart';
 
 class ComprehensiveBiodataFilterDialog extends StatefulWidget {
   final Map<String, dynamic> currentFilters;
@@ -27,13 +28,13 @@ class _ComprehensiveBiodataFilterDialogState
   // Height range (in feet, converted to cm for API)
   RangeValues _heightRange = const RangeValues(5.0, 7.0);
 
-  // Address selections
-  String? _selectedDivision;
-  String? _selectedDistrict;
-  String? _selectedUpazila;
-  String? _selectedPresentDivision;
-  String? _selectedPresentDistrict;
-  String? _selectedPresentUpazila;
+  // Address selections - Multi-select sets
+  Set<String> _selectedDivisions = {};
+  Set<String> _selectedDistricts = {};
+  Set<String> _selectedUpazilas = {};
+  Set<String> _selectedPresentDivisions = {};
+  Set<String> _selectedPresentDistricts = {};
+  Set<String> _selectedPresentUpazilas = {};
 
   // Multi-select sets
   Set<String> _selectedEducationMedium = {};
@@ -44,42 +45,87 @@ class _ComprehensiveBiodataFilterDialogState
   Set<String> _selectedEconomicStatus = {};
   Set<String> _selectedCategories = {};
 
-  // Location data
-  final List<String> _divisions = [
-    'ঢাকা',
-    'চট্টগ্রাম',
-    'রাজশাহী',
-    'খুলনা',
-    'বরিশাল',
-    'সিলেট',
-    'রংপুর',
-    'ময়মনসিংহ',
-  ];
-
-  Map<String, List<String>> get _districtsByDivision => {
-    'ঢাকা': ['ঢাকা', 'গাজীপুর', 'নারায়ণগঞ্জ', 'টাঙ্গাইল', 'মানিকগঞ্জ', 'কিশোরগঞ্জ'],
-    'চট্টগ্রাম': ['চট্টগ্রাম', 'কক্সবাজার', 'কুমিল্লা', 'নোয়াখালী', 'ফেনী', 'ব্রাহ্মণবাড়িয়া'],
-    'রাজশাহী': ['রাজশাহী', 'নাটোর', 'বগুড়া', 'পাবনা', 'সিরাজগঞ্জ'],
-    'খুলনা': ['খুলনা', 'যশোর', 'সাতক্ষীরা', 'বাগেরহাট', 'কুষ্টিয়া'],
-    'বরিশাল': ['বরিশাল', 'পটুয়াখালী', 'ভোলা', 'বরগুনা', 'ঝালকাঠি', 'পিরোজপুর'],
-    'সিলেট': ['সিলেট', 'মৌলভীবাজার', 'হবিগঞ্জ', 'সুনামগঞ্জ'],
-    'রংপুর': ['রংপুর', 'দিনাজপুর', 'কুড়িগ্রাম', 'লালমনিরহাট', 'নীলফামারী'],
-    'ময়মনসিংহ': ['ময়মনসিংহ', 'জামালপুর', 'শেরপুর', 'নেত্রকোনা'],
-  };
-
-  Map<String, List<String>> get _upazilasByDistrict => {
-    'ঢাকা': ['ধানমন্ডি', 'মিরপুর', 'গুলশান', 'উত্তরা', 'মোহাম্মদপুর', 'তেজগাঁও'],
-    'চট্টগ্রাম': ['পাঁচলাইশ', 'হালিশহর', 'আগ্রাবাদ', 'বাকলিয়া', 'চান্দগাঁও'],
-    'গাজীপুর': ['গাজীপুর সদর', 'কালিয়াকৈর', 'কাপাসিয়া', 'শ্রীপুর'],
-    'কক্সবাজার': ['কক্সবাজার সদর', 'চকরিয়া', 'রামু', 'উখিয়া', 'টেকনাফ'],
-    'বরিশাল': ['বরিশাল সদর', 'বাকেরগঞ্জ', 'বানারীপাড়া', 'গৌরনদী'],
-  };
+  // Address service
+  final AddressService _addressService = AddressService.instance;
+  bool _isAddressDataLoaded = false;
+  
+  // Location data (loaded from JSON)
+  List<String> _divisions = [];
+  List<String> _currentDistricts = [];
+  List<String> _currentUpazilas = [];
+  List<String> _presentDistricts = [];
+  List<String> _presentUpazilas = [];
 
   @override
   void initState() {
     super.initState();
     _filters = Map.from(widget.currentFilters);
+    _loadAddressData();
+  }
+
+  Future<void> _loadAddressData() async {
+    await _addressService.loadData();
+    setState(() {
+      _divisions = _addressService.getDivisions();
+      _isAddressDataLoaded = true;
+    });
     _initializeFromFilters();
+  }
+  
+  void _updateDistrictsForDivisions(Set<String> divisions, {bool isPresent = false}) {
+    if (divisions.isEmpty) {
+      setState(() {
+        if (isPresent) {
+          _presentDistricts = [];
+        } else {
+          _currentDistricts = [];
+        }
+      });
+      return;
+    }
+    
+    // Combine districts from all selected divisions
+    final Set<String> allDistricts = {};
+    for (final division in divisions) {
+      final districts = _addressService.getDistrictsByDivision(division);
+      allDistricts.addAll(districts);
+    }
+    
+    setState(() {
+      if (isPresent) {
+        _presentDistricts = allDistricts.toList()..sort();
+      } else {
+        _currentDistricts = allDistricts.toList()..sort();
+      }
+    });
+  }
+  
+  void _updateUpazilasForDistricts(Set<String> districts, {bool isPresent = false}) {
+    if (districts.isEmpty) {
+      setState(() {
+        if (isPresent) {
+          _presentUpazilas = [];
+        } else {
+          _currentUpazilas = [];
+        }
+      });
+      return;
+    }
+    
+    // Combine upazilas from all selected districts
+    final Set<String> allUpazilas = {};
+    for (final district in districts) {
+      final upazilas = _addressService.getUpazilasByDistrict(district);
+      allUpazilas.addAll(upazilas);
+    }
+    
+    setState(() {
+      if (isPresent) {
+        _presentUpazilas = allUpazilas.toList()..sort();
+      } else {
+        _currentUpazilas = allUpazilas.toList()..sort();
+      }
+    });
   }
 
   void _initializeFromFilters() {
@@ -87,8 +133,35 @@ class _ComprehensiveBiodataFilterDialogState
     if (_filters['minAge'] != null) _ageRange = RangeValues((_filters['minAge'] as num).toDouble(), _ageRange.end);
     if (_filters['maxAge'] != null) _ageRange = RangeValues(_ageRange.start, (_filters['maxAge'] as num).toDouble());
     
-    if (_filters['minHeight'] != null) _heightRange = RangeValues((_filters['minHeight'] as num).toDouble() / 30.48, _heightRange.end);
-    if (_filters['maxHeight'] != null) _heightRange = RangeValues(_heightRange.start, (_filters['maxHeight'] as num).toDouble() / 30.48);
+    // Height is in feet format (e.g., 5.1 means 5 feet 1 inch)
+    if (_filters['minHeight'] != null) _heightRange = RangeValues((_filters['minHeight'] as num).toDouble(), _heightRange.end);
+    if (_filters['maxHeight'] != null) _heightRange = RangeValues(_heightRange.start, (_filters['maxHeight'] as num).toDouble());
+    
+    // Initialize permanent address selections (comma-separated values) and load cascading data
+    if (_filters['division'] != null && _filters['division'].toString().isNotEmpty) {
+      _selectedDivisions = _filters['division'].toString().split(',').toSet();
+      _updateDistrictsForDivisions(_selectedDivisions, isPresent: false);
+    }
+    if (_filters['zilla'] != null && _filters['zilla'].toString().isNotEmpty) {
+      _selectedDistricts = _filters['zilla'].toString().split(',').toSet();
+      _updateUpazilasForDistricts(_selectedDistricts, isPresent: false);
+    }
+    if (_filters['upazila'] != null && _filters['upazila'].toString().isNotEmpty) {
+      _selectedUpazilas = _filters['upazila'].toString().split(',').toSet();
+    }
+    
+    // Initialize present address selections (comma-separated values) and load cascading data
+    if (_filters['current_division'] != null && _filters['current_division'].toString().isNotEmpty) {
+      _selectedPresentDivisions = _filters['current_division'].toString().split(',').toSet();
+      _updateDistrictsForDivisions(_selectedPresentDivisions, isPresent: true);
+    }
+    if (_filters['current_zilla'] != null && _filters['current_zilla'].toString().isNotEmpty) {
+      _selectedPresentDistricts = _filters['current_zilla'].toString().split(',').toSet();
+      _updateUpazilasForDistricts(_selectedPresentDistricts, isPresent: true);
+    }
+    if (_filters['current_upzilla'] != null && _filters['current_upzilla'].toString().isNotEmpty) {
+      _selectedPresentUpazilas = _filters['current_upzilla'].toString().split(',').toSet();
+    }
     
     if (_filters['permanent_address'] != null) {
       _permanentAddressController.text = _filters['permanent_address'];
@@ -116,12 +189,18 @@ class _ComprehensiveBiodataFilterDialogState
       _ageRange = const RangeValues(18, 60);
       _heightRange = const RangeValues(5.0, 7.0);
       _permanentAddressController.clear();
-      _selectedDivision = null;
-      _selectedDistrict = null;
-      _selectedUpazila = null;
-      _selectedPresentDivision = null;
-      _selectedPresentDistrict = null;
-      _selectedPresentUpazila = null;
+      // Clear address multi-select sets
+      _selectedDivisions.clear();
+      _selectedDistricts.clear();
+      _selectedUpazilas.clear();
+      _selectedPresentDivisions.clear();
+      _selectedPresentDistricts.clear();
+      _selectedPresentUpazilas.clear();
+      // Clear cascading lists
+      _currentDistricts = [];
+      _currentUpazilas = [];
+      _presentDistricts = [];
+      _presentUpazilas = [];
       _selectedEducationMedium.clear();
       _selectedDeeniEdu.clear();
       _selectedComplexion.clear();
@@ -137,35 +216,38 @@ class _ComprehensiveBiodataFilterDialogState
     final filters = <String, dynamic>{};
     
     // Basic filters
-    if (_filters['gender'] != null) filters['gender'] = _filters['gender'];
     if (_filters['bioType'] != null) filters['bio_type'] = _filters['bioType'];
     if (_filters['maritalStatus'] != null) filters['marital_status'] = _filters['maritalStatus'];
-    if (_filters['division'] != null) filters['division'] = _filters['division'];
-    if (_filters['current_upzilla'] != null) filters['current_upzilla'] = _filters['current_upzilla'];
     
-    // Permanent address - use upazila if selected, else district, else division
-    if (_selectedUpazila != null && _selectedUpazila!.isNotEmpty) {
-      filters['permanent_address'] = _selectedUpazila;
-    } else if (_selectedDistrict != null && _selectedDistrict!.isNotEmpty) {
-      filters['permanent_address'] = _selectedDistrict;
-    } else if (_selectedDivision != null && _selectedDivision!.isNotEmpty) {
-      filters['permanent_address'] = _selectedDivision;
+    // Permanent address - use comma-separated values for multi-select
+    if (_selectedDivisions.isNotEmpty) {
+      filters['division'] = _selectedDivisions.join(',');
+    }
+    if (_selectedDistricts.isNotEmpty) {
+      filters['zilla'] = _selectedDistricts.join(',');
+    }
+    if (_selectedUpazilas.isNotEmpty) {
+      filters['upazila'] = _selectedUpazilas.join(',');
     }
     
-    // Present address - use upazila if selected, else district
-    if (_selectedPresentUpazila != null && _selectedPresentUpazila!.isNotEmpty) {
-      filters['current_upzilla'] = _selectedPresentUpazila;
-    } else if (_selectedPresentDistrict != null && _selectedPresentDistrict!.isNotEmpty) {
-      filters['current_upzilla'] = _selectedPresentDistrict;
+    // Present/Current address - use comma-separated values for multi-select
+    if (_selectedPresentDivisions.isNotEmpty) {
+      filters['current_division'] = _selectedPresentDivisions.join(',');
+    }
+    if (_selectedPresentDistricts.isNotEmpty) {
+      filters['current_zilla'] = _selectedPresentDistricts.join(',');
+    }
+    if (_selectedPresentUpazilas.isNotEmpty) {
+      filters['current_upzilla'] = _selectedPresentUpazilas.join(',');
     }
     
     // Age range
     filters['minAge'] = _ageRange.start.round();
     filters['maxAge'] = _ageRange.end.round();
     
-    // Height range (convert feet to cm)
-    filters['minHeight'] = (_heightRange.start * 30.48).round();
-    filters['maxHeight'] = (_heightRange.end * 30.48).round();
+    // Height range (in feet format, e.g., 5.1 means 5 feet 1 inch)
+    filters['minHeight'] = double.parse(_heightRange.start.toStringAsFixed(1));
+    filters['maxHeight'] = double.parse(_heightRange.end.toStringAsFixed(1));
     
     // Address
     if (_permanentAddressController.text.isNotEmpty) {
@@ -244,33 +326,21 @@ class _ComprehensiveBiodataFilterDialogState
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Gender Filter
-                    _buildSectionTitle('লিঙ্গ'),
-                    SizedBox(height: 8.h),
-                    Wrap(
-                      spacing: 8.w,
-                      children: [
-                        _buildChip('পুরুষ', 'gender', 'পুরুষ'),
-                        _buildChip('মহিলা', 'gender', 'মহিলা'),
-                      ],
-                    ),
-                    SizedBox(height: 16.h),
-
-                    // Biodata Type Filter
-                    _buildSectionTitle('ব্যাবসায়িক ধরন'),
+                    // Biodata Type Filter (আমি খুজছি)
+                    _buildSectionTitle('আমি খুজছি'),
                     SizedBox(height: 8.h),
                     Wrap(
                       spacing: 8.w,
                       runSpacing: 8.h,
                       children: [
-                        _buildChip('সাধারণ বিবাহ', 'bioType', 'সাধারণ বিবাহ'),
-                        _buildChip('দ্বিতীয় বিবাহ', 'bioType', 'দ্বিতীয় বিবাহ'),
+                        _buildChip('পাত্রের বায়োডাটা', 'bioType', 'পাত্রের বায়োডাটা'),
+                        _buildChip('পাত্রীর বায়োডাটা', 'bioType', 'পাত্রীর বায়োডাটা'),
                       ],
                     ),
                     SizedBox(height: 16.h),
 
                     // Marital Status Filter
-                    _buildSectionTitle('ৈবরাহিত অবস্থা'),
+                    _buildSectionTitle('বৈবাহিক অবস্থা'),
                     SizedBox(height: 8.h),
                     Wrap(
                       spacing: 8.w,
@@ -278,8 +348,9 @@ class _ComprehensiveBiodataFilterDialogState
                       children: [
                         _buildChip('অবিবাহিত', 'maritalStatus', 'অবিবাহিত'),
                         _buildChip('বিবাহিত', 'maritalStatus', 'বিবাহিত'),
-                        _buildChip('তালাকপ্রাপ্ত', 'maritalStatus', 'তালাকপ্রাপ্ত'),
-                        _buildChip('বিধবা/বিপত্নীক', 'maritalStatus', 'বিধবা/বিপত্নীক'),
+                        _buildChip('ডিভোর্সড', 'maritalStatus', 'ডিভোর্সড'),
+                        _buildChip('বিধবা', 'maritalStatus', 'বিধবা'),
+                        _buildChip('বিপত্নীক', 'maritalStatus', 'বিপত্নীক'),
                       ],
                     ),
                     SizedBox(height: 16.h),
@@ -311,44 +382,77 @@ class _ComprehensiveBiodataFilterDialogState
                     ),
                     SizedBox(height: 16.h),
 
-                    // Location Filter - Primary Section
-                    _buildSectionTitle('ঠিকানা'),
+                    // Location Filter - Primary Section (Permanent Address)
+                    _buildSectionTitle('স্থায়ী ঠিকানা'),
                     SizedBox(height: 8.h),
-                    _buildDropdown(
-                      'বিভাগ নির্বাচন করুন',
-                      _divisions,
-                      _selectedDivision,
-                      (value) {
-                        setState(() {
-                          _selectedDivision = value;
-                          _selectedDistrict = null;
-                          _selectedUpazila = null;
-                        });
-                      },
-                    ),
-                    if (_selectedDivision != null) ...[
-                      SizedBox(height: 8.h),
-                      _buildDropdown(
-                        'জেলা নির্বাচন করুন',
-                        _districtsByDivision[_selectedDivision] ?? [],
-                        _selectedDistrict,
-                        (value) {
+                    if (!_isAddressDataLoaded)
+                      Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(8.w),
+                          child: SizedBox(
+                            width: 20.w,
+                            height: 20.w,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                      )
+                    else ...[
+                      // Division Multi-Select
+                      _buildMultiSelectSection(
+                        'বিভাগ নির্বাচন করুন',
+                        _divisions,
+                        _selectedDivisions,
+                        (item, selected) {
                           setState(() {
-                            _selectedDistrict = value;
-                            _selectedUpazila = null;
+                            if (selected) {
+                              _selectedDivisions.add(item);
+                            } else {
+                              _selectedDivisions.remove(item);
+                            }
+                            // Clear dependent selections when divisions change
+                            _selectedDistricts.clear();
+                            _selectedUpazilas.clear();
+                            _currentUpazilas = [];
                           });
+                          _updateDistrictsForDivisions(_selectedDivisions, isPresent: false);
                         },
                       ),
                     ],
-                    if (_selectedDistrict != null) ...[
+                    if (_selectedDivisions.isNotEmpty && _currentDistricts.isNotEmpty) ...[
                       SizedBox(height: 8.h),
-                      _buildDropdown(
-                        'উপজেলা নির্বাচন করুন',
-                        _upazilasByDistrict[_selectedDistrict] ?? [],
-                        _selectedUpazila,
-                        (value) {
+                      // District Multi-Select
+                      _buildMultiSelectSection(
+                        'জেলা নির্বাচন করুন',
+                        _currentDistricts,
+                        _selectedDistricts,
+                        (item, selected) {
                           setState(() {
-                            _selectedUpazila = value;
+                            if (selected) {
+                              _selectedDistricts.add(item);
+                            } else {
+                              _selectedDistricts.remove(item);
+                            }
+                            // Clear dependent selections when districts change
+                            _selectedUpazilas.clear();
+                          });
+                          _updateUpazilasForDistricts(_selectedDistricts, isPresent: false);
+                        },
+                      ),
+                    ],
+                    if (_selectedDistricts.isNotEmpty && _currentUpazilas.isNotEmpty) ...[
+                      SizedBox(height: 8.h),
+                      // Upazila Multi-Select
+                      _buildMultiSelectSection(
+                        'উপজেলা নির্বাচন করুন',
+                        _currentUpazilas,
+                        _selectedUpazilas,
+                        (item, selected) {
+                          setState(() {
+                            if (selected) {
+                              _selectedUpazilas.add(item);
+                            } else {
+                              _selectedUpazilas.remove(item);
+                            }
                           });
                         },
                       ),
@@ -362,41 +466,61 @@ class _ComprehensiveBiodataFilterDialogState
                         // Present Address
                         _buildSectionTitle('বর্তমান ঠিকানা', fontSize: 14.sp),
                         SizedBox(height: 8.h),
-                        _buildDropdown(
+                        // Present Division Multi-Select
+                        _buildMultiSelectSection(
                           'বিভাগ নির্বাচন করুন',
                           _divisions,
-                          _selectedPresentDivision,
-                          (value) {
+                          _selectedPresentDivisions,
+                          (item, selected) {
                             setState(() {
-                              _selectedPresentDivision = value;
-                              _selectedPresentDistrict = null;
-                              _selectedPresentUpazila = null;
+                              if (selected) {
+                                _selectedPresentDivisions.add(item);
+                              } else {
+                                _selectedPresentDivisions.remove(item);
+                              }
+                              // Clear dependent selections when divisions change
+                              _selectedPresentDistricts.clear();
+                              _selectedPresentUpazilas.clear();
+                              _presentUpazilas = [];
                             });
+                            _updateDistrictsForDivisions(_selectedPresentDivisions, isPresent: true);
                           },
                         ),
-                        if (_selectedPresentDivision != null) ...[
+                        if (_selectedPresentDivisions.isNotEmpty && _presentDistricts.isNotEmpty) ...[
                           SizedBox(height: 8.h),
-                          _buildDropdown(
+                          // Present District Multi-Select
+                          _buildMultiSelectSection(
                             'জেলা নির্বাচন করুন',
-                            _districtsByDivision[_selectedPresentDivision] ?? [],
-                            _selectedPresentDistrict,
-                            (value) {
+                            _presentDistricts,
+                            _selectedPresentDistricts,
+                            (item, selected) {
                               setState(() {
-                                _selectedPresentDistrict = value;
-                                _selectedPresentUpazila = null;
+                                if (selected) {
+                                  _selectedPresentDistricts.add(item);
+                                } else {
+                                  _selectedPresentDistricts.remove(item);
+                                }
+                                // Clear dependent selections when districts change
+                                _selectedPresentUpazilas.clear();
                               });
+                              _updateUpazilasForDistricts(_selectedPresentDistricts, isPresent: true);
                             },
                           ),
                         ],
-                        if (_selectedPresentDistrict != null) ...[
+                        if (_selectedPresentDistricts.isNotEmpty && _presentUpazilas.isNotEmpty) ...[
                           SizedBox(height: 8.h),
-                          _buildDropdown(
+                          // Present Upazila Multi-Select
+                          _buildMultiSelectSection(
                             'উপজেলা নির্বাচন করুন',
-                            _upazilasByDistrict[_selectedPresentDistrict] ?? [],
-                            _selectedPresentUpazila,
-                            (value) {
+                            _presentUpazilas,
+                            _selectedPresentUpazilas,
+                            (item, selected) {
                               setState(() {
-                                _selectedPresentUpazila = value;
+                                if (selected) {
+                                  _selectedPresentUpazilas.add(item);
+                                } else {
+                                  _selectedPresentUpazilas.remove(item);
+                                }
                               });
                             },
                           ),
@@ -413,15 +537,15 @@ class _ComprehensiveBiodataFilterDialogState
                     _buildExpandableSection(
                       'শিক্ষা',
                       [
-                        _buildSectionTitle('পড়ুয়াশোনার মাধ্যম', fontSize: 14.sp),
+                        _buildSectionTitle('পড়াশোনার মাধ্যম', fontSize: 14.sp),
                         SizedBox(height: 8.h),
                         _buildCheckboxGroup([
                           'জেনারেল',
-                          'কওমি',
+                          'কওমী',
                           'আলিয়া',
                         ], _selectedEducationMedium),
                         SizedBox(height: 12.h),
-                        _buildSectionTitle('স্কুল শিক্ষাগত যোগ্যতা', fontSize: 14.sp),
+                        _buildSectionTitle('দ্বীনি শিক্ষার যোগ্যতা', fontSize: 14.sp),
                         SizedBox(height: 8.h),
                         _buildCheckboxGroup([
                           'হাফেজ',
@@ -474,14 +598,13 @@ class _ComprehensiveBiodataFilterDialogState
                           'উজ্জ্বল ফর্সা',
                         ], _selectedComplexion),
                         SizedBox(height: 12.h),
-                        _buildSectionTitle('ফিজিক অনুসরণ', fontSize: 14.sp),
+                        _buildSectionTitle('ফিকহ অনুসরন', fontSize: 14.sp),
                         SizedBox(height: 8.h),
                         _buildCheckboxGroup([
                           'হানাফি',
                           'মালিকি',
-                          'শাফিই',
-                          'হাবলী',
-                          'আহলে হাদিস / শালাফি',
+                          'শাফিঈ',
+                          'হাম্বলি',
                         ], _selectedFiqh),
                       ],
                     ),
@@ -493,16 +616,17 @@ class _ComprehensiveBiodataFilterDialogState
                       [
                         _buildCheckboxGroup([
                           'ইমাম',
-                          'আয়াতুল্লাহ শিক্ষক',
+                          'মাদ্রাসা শিক্ষক',
                           'শিক্ষক',
-                          'ইসলামিয়ার',
-                          'ব্যবসায়ী',
-                          'সরকারি চাকুরী',
                           'ডাক্তার',
-                          'সেবাধর্মী চাকুরী',
-                          'MBBS/BDS শিক্ষার্থী',
+                          'ইঞ্জিনিয়ার',
+                          'ব্যবসায়ী',
+                          'সরকারি চাকুরি',
+                          'বেসরকারি চাকুরি',
+                          'ফ্রিল্যান্সার',
                           'শিক্ষার্থী',
                           'প্রবাসী',
+                          'অন্যান্য',
                           'পেশা নেই',
                         ], _selectedOccupation),
                       ],
@@ -527,11 +651,11 @@ class _ComprehensiveBiodataFilterDialogState
                         SizedBox(height: 8.h),
                         _buildCheckboxGroup([
                           'প্রতিবন্ধী',
-                          'বন্ধা',
-                          'নারীবাদি',
+                          'বন্ধ্যা',
+                          'নওমুসলিম',
                           'এতিম',
-                          '২২ বছর হতে আধুরই',
-                          'তালাকপ্রা',
+                          'মাসনা হতে আগ্রহী',
+                          'তাবলীগ',
                         ], _selectedCategories),
                       ],
                     ),
@@ -682,32 +806,75 @@ class _ComprehensiveBiodataFilterDialogState
     );
   }
 
-  Widget _buildDropdown(
-    String hint,
+  Widget _buildMultiSelectSection(
+    String title,
     List<String> items,
-    String? selectedValue,
-    ValueChanged<String?> onChanged,
+    Set<String> selectedItems,
+    void Function(String item, bool selected) onItemToggle,
   ) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[400]!),
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          isExpanded: true,
-          hint: Text(hint, style: TextStyle(fontSize: 14.sp)),
-          value: selectedValue,
-          items: items.map((String item) {
-            return DropdownMenuItem<String>(
-              value: item,
-              child: Text(item, style: TextStyle(fontSize: 14.sp)),
-            );
-          }).toList(),
-          onChanged: onChanged,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 13.sp,
+            color: Colors.grey[600],
+          ),
         ),
-      ),
+        SizedBox(height: 6.h),
+        // Show selected items as chips
+        if (selectedItems.isNotEmpty) ...[
+          Wrap(
+            spacing: 6.w,
+            runSpacing: 4.h,
+            children: selectedItems.map((item) {
+              return Chip(
+                label: Text(
+                  item,
+                  style: TextStyle(fontSize: 12.sp),
+                ),
+                deleteIcon: Icon(Icons.close, size: 16.sp),
+                onDeleted: () => onItemToggle(item, false),
+                backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                side: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
+              );
+            }).toList(),
+          ),
+          SizedBox(height: 8.h),
+        ],
+        // Dropdown to add more items
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey[400]!),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              hint: Text(
+                selectedItems.isEmpty ? title : 'আরো যোগ করুন...',
+                style: TextStyle(fontSize: 14.sp),
+              ),
+              value: null,
+              items: items
+                  .where((item) => !selectedItems.contains(item))
+                  .map((String item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(item, style: TextStyle(fontSize: 14.sp)),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  onItemToggle(value, true);
+                }
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

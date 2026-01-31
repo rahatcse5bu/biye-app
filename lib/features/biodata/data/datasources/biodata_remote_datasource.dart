@@ -5,10 +5,7 @@ abstract class BiodataRemoteDataSource {
   Future<List<BiodataModel>> getBiodatas({
     int page = 1,
     int limit = 20,
-    String? gender,
-    String? maritalStatus,
-    String? zilla,
-    bool? isFeatured,
+    Map<String, dynamic>? filters,
   });
   
   Future<BiodataModel> getBiodataById(String userId);
@@ -25,20 +22,21 @@ class BiodataRemoteDataSourceImpl implements BiodataRemoteDataSource {
   Future<List<BiodataModel>> getBiodatas({
     int page = 1,
     int limit = 20,
-    String? gender,
-    String? maritalStatus,
-    String? zilla,
-    bool? isFeatured,
+    Map<String, dynamic>? filters,
   }) async {
     final queryParams = <String, dynamic>{
       'page': page,
       'limit': limit,
     };
     
-    if (gender != null) queryParams['gender'] = gender;
-    if (maritalStatus != null) queryParams['marital_status'] = maritalStatus;
-    if (zilla != null) queryParams['zilla'] = zilla;
-    if (isFeatured != null) queryParams['isFeatured'] = isFeatured;
+    // Add all filter parameters
+    if (filters != null) {
+      filters.forEach((key, value) {
+        if (value != null) {
+          queryParams[key] = value;
+        }
+      });
+    }
     
     final response = await dioClient.get(
       '/general-info',

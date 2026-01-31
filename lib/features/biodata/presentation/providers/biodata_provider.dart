@@ -7,7 +7,6 @@ import '../../domain/repositories/biodata_repository.dart';
 import '../../domain/usecases/get_biodata_by_id_usecase.dart';
 import '../../domain/usecases/get_biodatas_usecase.dart';
 import 'biodata_state.dart';
-import '../../domain/entities/biodata_entity.dart';
 
 // Data Sources
 final biodataRemoteDataSourceProvider = Provider<BiodataRemoteDataSource>((ref) {
@@ -43,11 +42,15 @@ class BiodataListNotifier extends StateNotifier<BiodataState> {
   
   BiodataListNotifier(this.getBiodatasUseCase) : super(const BiodataState.initial());
   
-  Future<void> loadBiodatas({int page = 1, int limit = 20}) async {
+  Future<void> loadBiodatas({
+    int page = 1,
+    int limit = 20,
+    Map<String, dynamic>? filters,
+  }) async {
     state = const BiodataState.loading();
     
     final result = await getBiodatasUseCase(
-      GetBiodatasParams(page: page, limit: limit),
+      GetBiodatasParams(page: page, limit: limit, filters: filters),
     );
     
     result.fold(

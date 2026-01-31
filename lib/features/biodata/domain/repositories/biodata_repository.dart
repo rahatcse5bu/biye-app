@@ -6,6 +6,7 @@ abstract class BiodataRepository {
   Future<Either<Failure, List<BiodataEntity>>> getBiodatas({
     int page = 1,
     int limit = 20,
+    Map<String, dynamic>? filters,
   });
   
   Future<Either<Failure, BiodataEntity>> getBiodataById(String id);

@@ -127,6 +127,8 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
                         setState(() {
                           _activeFilters.clear();
                         });
+                        // Reload biodatas without filters
+                        ref.read(biodataListNotifierProvider.notifier).loadBiodatas();
                       },
                       child: const Text('ফিল্টার রিসেট করুন'),
                     ),
@@ -326,68 +328,17 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
           setState(() {
             _activeFilters = filters;
           });
+          // Load biodatas with filters from server
+          ref.read(biodataListNotifierProvider.notifier).loadBiodatas(
+            filters: filters,
+          );
         },
       ),
     );
   }
 
   List<BiodataEntity> _applyFilters(List<BiodataEntity> biodatas) {
-    if (_activeFilters.isEmpty) return biodatas;
-
-    return biodatas.where((biodata) {
-      // Gender filter
-      if (_activeFilters['gender'] != null) {
-        if (biodata.gender != _activeFilters['gender']) return false;
-      }
-
-      // Biodata Type filter
-      if (_activeFilters['bioType'] != null) {
-        if (biodata.bioType != _activeFilters['bioType']) return false;
-      }
-
-      // Marital Status filter
-      if (_activeFilters['maritalStatus'] != null) {
-        if (biodata.maritalStatus != _activeFilters['maritalStatus']) return false;
-      }
-
-      // Age Range filter
-      if (_activeFilters['minAge'] != null || _activeFilters['maxAge'] != null) {
-        final age = _calculateAge(biodata.dateOfBirth);
-        if (_activeFilters['minAge'] != null && age < _activeFilters['minAge']) {
-          return false;
-        }
-        if (_activeFilters['maxAge'] != null && age > _activeFilters['maxAge']) {
-          return false;
-        }
-      }
-
-      // Division filter
-      if (_activeFilters['division'] != null) {
-        if (biodata.address?.division != _activeFilters['division'] &&
-            biodata.address?.presentDivision != _activeFilters['division']) {
-          return false;
-        }
-      }
-
-      // Education filter (check if highest level contains the filter value)
-      if (_activeFilters['education'] != null) {
-        final educationLevel = biodata.educationQualification?.highestEduLevel ?? '';
-        if (!educationLevel.contains(_activeFilters['education'])) {
-          return false;
-        }
-      }
-
-      return true;
-    }).toList();
-  }
-
-  int _calculateAge(DateTime birthDate) {
-    final today = DateTime.now();
-    int age = today.year - birthDate.year;
-    if (today.month < birthDate.month ||
-        (today.month == birthDate.month && today.day < birthDate.day)) {
-      age--;
-    }
-    return age;
+    // Filters are now applied server-side, so just return the list
+    return biodatas;
   }
 }

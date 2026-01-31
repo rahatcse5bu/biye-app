@@ -19,6 +19,7 @@ class BiodataRepositoryImpl implements BiodataRepository {
   Future<Either<Failure, List<BiodataEntity>>> getBiodatas({
     int page = 1,
     int limit = 20,
+    Map<String, dynamic>? filters,
   }) async {
     if (!await networkInfo.isConnected) {
       return const Left(NetworkFailure('No internet connection'));
@@ -28,6 +29,7 @@ class BiodataRepositoryImpl implements BiodataRepository {
       final models = await remoteDataSource.getBiodatas(
         page: page,
         limit: limit,
+        filters: filters,
       );
       final entities = models.map((model) => model.toEntity()).toList();
       return Right(entities);
