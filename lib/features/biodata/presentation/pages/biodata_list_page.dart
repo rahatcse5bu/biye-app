@@ -41,7 +41,7 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
         )),
         actions: [
           IconButton(
-            icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view),
+            icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view, color: Colors.white),
             onPressed: () {
               setState(() {
                 _isGridView = !_isGridView;
@@ -79,6 +79,10 @@ class _BiodataListPageState extends ConsumerState<BiodataListPage> {
             ],
           ),
         ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: biodataState.when(
         initial: () => BiodataShimmer(isGridView: _isGridView),

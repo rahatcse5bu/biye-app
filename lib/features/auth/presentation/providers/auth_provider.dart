@@ -13,6 +13,7 @@ import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/is_logged_in_usecase.dart';
 import '../../domain/usecases/login_with_google_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
+import '../../domain/usecases/refresh_user_data_usecase.dart';
 import 'auth_state.dart';
 
 // Shared Preferences Provider
@@ -80,18 +81,25 @@ final logoutUseCaseProvider = Provider<LogoutUseCase>((ref) {
   return LogoutUseCase(repository);
 });
 
+final refreshUserDataUseCaseProvider = Provider<RefreshUserDataUseCase>((ref) {
+  final repository = ref.watch(authRepositoryProvider);
+  return RefreshUserDataUseCase(repository);
+});
+
 // Auth Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   final LoginWithGoogleUseCase loginWithGoogleUseCase;
   final GetCurrentUserUseCase getCurrentUserUseCase;
   final IsLoggedInUseCase isLoggedInUseCase;
   final LogoutUseCase logoutUseCase;
+  final RefreshUserDataUseCase refreshUserDataUseCase;
   
   AuthNotifier({
     required this.loginWithGoogleUseCase,
     required this.getCurrentUserUseCase,
     required this.isLoggedInUseCase,
     required this.logoutUseCase,
+    required this.refreshUserDataUseCase,
   }) : super(const AuthState.initial()) {
     checkAuthStatus();
   }
@@ -99,9 +107,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> checkAuthStatus() async {
     final isLoggedIn = await isLoggedInUseCase();
     if (isLoggedIn) {
-      final user = await getCurrentUserUseCase();
-      if (user != null) {
-        state = AuthState.authenticated(user);
+      // First load cached user for immediate UI update
+      final cachedUser = await getCurrentUserUseCase();
+      if (cachedUser != null) {
+        state = AuthState.authenticated(cachedUser);
+        // Then refresh from server to get latest data (points, etc.)
+        await refreshUserPoints();
       } else {
         state = const AuthState.unauthenticated();
       }
@@ -131,6 +142,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
       (_) => state = const AuthState.unauthenticated(),
     );
   }
+  
+  /// Refresh user data from server (e.g., after successful payment)
+  /// This fetches fresh data from API and updates local cache
+  Future<void> refreshUserPoints() async {
+    final result = await refreshUserDataUseCase();
+    
+    result.fold(
+      (failure) {
+        // Silent fail - keep current state if refresh fails
+        // Could log error here if needed
+      },
+      (user) => state = AuthState.authenticated(user),
+    );
+  }
 }
 
 // Auth State Notifier Provider
@@ -139,11 +164,13 @@ final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref
   final getCurrentUserUseCase = ref.watch(getCurrentUserUseCaseProvider);
   final isLoggedInUseCase = ref.watch(isLoggedInUseCaseProvider);
   final logoutUseCase = ref.watch(logoutUseCaseProvider);
+  final refreshUserDataUseCase = ref.watch(refreshUserDataUseCaseProvider);
   
   return AuthNotifier(
     loginWithGoogleUseCase: loginWithGoogleUseCase,
     getCurrentUserUseCase: getCurrentUserUseCase,
     isLoggedInUseCase: isLoggedInUseCase,
     logoutUseCase: logoutUseCase,
+    refreshUserDataUseCase: refreshUserDataUseCase,
   );
 });

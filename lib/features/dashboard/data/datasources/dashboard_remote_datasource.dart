@@ -31,6 +31,12 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       final dashboardData = response.data['data'] ?? {};
       final bioStats = bioStatsResponse.data['results'] ?? {};
 
+      // Calculate total proposals (pending + approved + rejected)
+      final pending = bioStats['pending'] ?? 0;
+      final approved = bioStats['approved'] ?? 0;
+      final rejected = bioStats['rejected'] ?? 0;
+      final total = pending + approved + rejected;
+
       // Merge both responses into one model
       final combinedData = {
         'points': userPoints, // Use points from authenticated user
@@ -39,10 +45,10 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
         'favorite_count': dashboardData['favorite_count'] ?? 0,
         'unFavorite_count': dashboardData['unFavorite_count'] ?? 0,
         'contact_purchase_count': dashboardData['contact_purchase_count'] ?? 0,
-        'pending': bioStats['pending'] ?? 0,
-        'total': bioStats['total'] ?? 0,
-        'approvedPercentage': bioStats['approvedPercentage'] ?? 0.0,
-        'rejectedPercentage': bioStats['rejectedPercentage'] ?? 0.0,
+        'pending': pending,
+        'total': total,
+        'approvedPercentage': double.tryParse(bioStats['approvedPercentage']?.toString() ?? '0') ?? 0.0,
+        'rejectedPercentage': double.tryParse(bioStats['rejectedPercentage']?.toString() ?? '0') ?? 0.0,
       };
 
       return DashboardStatsModel.fromJson(combinedData);

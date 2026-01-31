@@ -208,8 +208,8 @@ class _BkashWebViewPageState extends ConsumerState<BkashWebViewPage> {
 
       if (mounted) {
         if (success) {
-          // Refresh user data to get updated points
-          await ref.read(authNotifierProvider.notifier).checkAuthStatus();
+          // Refresh user data from server to get updated points
+          await ref.read(authNotifierProvider.notifier).refreshUserPoints();
           
           _showMessage('🎉 পেমেন্ট সফল হয়েছে! পয়েন্ট যোগ হয়েছে।', isError: false);
           Navigator.pop(context, true);

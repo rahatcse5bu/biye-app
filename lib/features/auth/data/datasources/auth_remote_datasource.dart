@@ -5,6 +5,7 @@ import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> loginWithGoogle();
+  Future<UserModel> refreshUserData();
   Future<void> logout();
 }
 
@@ -67,6 +68,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return UserModel.fromJson(response.data['data']);
     } catch (e) {
       throw Exception('Login failed: $e');
+    }
+  }
+  
+  @override
+  Future<UserModel> refreshUserData() async {
+    try {
+      // Get fresh user data from backend
+      final response = await dioClient.get('/user-info/verify');
+
+      if (response.data['success'] != true) {
+        throw Exception(response.data['message'] ?? 'Failed to refresh user data');
+      }
+
+      return UserModel.fromJson(response.data['data']);
+    } catch (e) {
+      throw Exception('Failed to refresh user data: $e');
     }
   }
   
