@@ -1,4 +1,4 @@
-package com.pncsoft.biye_app
+package com.pncsoft.biye_app_app
 
 import io.flutter.embedding.android.FlutterActivity
 

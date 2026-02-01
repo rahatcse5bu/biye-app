@@ -1,4 +1,4 @@
-package com.pncsoft.pnc_nikah_app
+package com.pncsoft.biye_app
 
 import io.flutter.embedding.android.FlutterActivity
 
