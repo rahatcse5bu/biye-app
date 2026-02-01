@@ -29,6 +29,8 @@ mixin _$BiodataEntity {
   String get screenColor => throw _privateConstructorUsedError;
   String get nationality => throw _privateConstructorUsedError;
   String get maritalStatus => throw _privateConstructorUsedError;
+  String? get religion => throw _privateConstructorUsedError;
+  String? get religiousType => throw _privateConstructorUsedError;
   String? get upzilla => throw _privateConstructorUsedError;
   String? get zilla => throw _privateConstructorUsedError;
   int? get viewsCount => throw _privateConstructorUsedError;
@@ -37,6 +39,7 @@ mixin _$BiodataEntity {
   int? get purchasesCount => throw _privateConstructorUsedError;
   bool? get isFeatured => throw _privateConstructorUsedError;
   bool? get isMarriageDone => throw _privateConstructorUsedError;
+  bool? get requestPracticingStatus => throw _privateConstructorUsedError;
   DateTime? get createdAt => throw _privateConstructorUsedError;
   DateTime? get updatedAt => throw _privateConstructorUsedError;
   AddressEntity? get address => throw _privateConstructorUsedError;
@@ -76,6 +79,8 @@ abstract class $BiodataEntityCopyWith<$Res> {
     String screenColor,
     String nationality,
     String maritalStatus,
+    String? religion,
+    String? religiousType,
     String? upzilla,
     String? zilla,
     int? viewsCount,
@@ -84,6 +89,7 @@ abstract class $BiodataEntityCopyWith<$Res> {
     int? purchasesCount,
     bool? isFeatured,
     bool? isMarriageDone,
+    bool? requestPracticingStatus,
     DateTime? createdAt,
     DateTime? updatedAt,
     AddressEntity? address,
@@ -131,6 +137,8 @@ class _$BiodataEntityCopyWithImpl<$Res, $Val extends BiodataEntity>
     Object? screenColor = null,
     Object? nationality = null,
     Object? maritalStatus = null,
+    Object? religion = freezed,
+    Object? religiousType = freezed,
     Object? upzilla = freezed,
     Object? zilla = freezed,
     Object? viewsCount = freezed,
@@ -139,6 +147,7 @@ class _$BiodataEntityCopyWithImpl<$Res, $Val extends BiodataEntity>
     Object? purchasesCount = freezed,
     Object? isFeatured = freezed,
     Object? isMarriageDone = freezed,
+    Object? requestPracticingStatus = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
     Object? address = freezed,
@@ -199,6 +208,14 @@ class _$BiodataEntityCopyWithImpl<$Res, $Val extends BiodataEntity>
                 ? _value.maritalStatus
                 : maritalStatus // ignore: cast_nullable_to_non_nullable
                       as String,
+            religion: freezed == religion
+                ? _value.religion
+                : religion // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            religiousType: freezed == religiousType
+                ? _value.religiousType
+                : religiousType // ignore: cast_nullable_to_non_nullable
+                      as String?,
             upzilla: freezed == upzilla
                 ? _value.upzilla
                 : upzilla // ignore: cast_nullable_to_non_nullable
@@ -230,6 +247,10 @@ class _$BiodataEntityCopyWithImpl<$Res, $Val extends BiodataEntity>
             isMarriageDone: freezed == isMarriageDone
                 ? _value.isMarriageDone
                 : isMarriageDone // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            requestPracticingStatus: freezed == requestPracticingStatus
+                ? _value.requestPracticingStatus
+                : requestPracticingStatus // ignore: cast_nullable_to_non_nullable
                       as bool?,
             createdAt: freezed == createdAt
                 ? _value.createdAt
@@ -397,6 +418,8 @@ abstract class _$$BiodataEntityImplCopyWith<$Res>
     String screenColor,
     String nationality,
     String maritalStatus,
+    String? religion,
+    String? religiousType,
     String? upzilla,
     String? zilla,
     int? viewsCount,
@@ -405,6 +428,7 @@ abstract class _$$BiodataEntityImplCopyWith<$Res>
     int? purchasesCount,
     bool? isFeatured,
     bool? isMarriageDone,
+    bool? requestPracticingStatus,
     DateTime? createdAt,
     DateTime? updatedAt,
     AddressEntity? address,
@@ -458,6 +482,8 @@ class __$$BiodataEntityImplCopyWithImpl<$Res>
     Object? screenColor = null,
     Object? nationality = null,
     Object? maritalStatus = null,
+    Object? religion = freezed,
+    Object? religiousType = freezed,
     Object? upzilla = freezed,
     Object? zilla = freezed,
     Object? viewsCount = freezed,
@@ -466,6 +492,7 @@ class __$$BiodataEntityImplCopyWithImpl<$Res>
     Object? purchasesCount = freezed,
     Object? isFeatured = freezed,
     Object? isMarriageDone = freezed,
+    Object? requestPracticingStatus = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
     Object? address = freezed,
@@ -526,6 +553,14 @@ class __$$BiodataEntityImplCopyWithImpl<$Res>
             ? _value.maritalStatus
             : maritalStatus // ignore: cast_nullable_to_non_nullable
                   as String,
+        religion: freezed == religion
+            ? _value.religion
+            : religion // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        religiousType: freezed == religiousType
+            ? _value.religiousType
+            : religiousType // ignore: cast_nullable_to_non_nullable
+                  as String?,
         upzilla: freezed == upzilla
             ? _value.upzilla
             : upzilla // ignore: cast_nullable_to_non_nullable
@@ -557,6 +592,10 @@ class __$$BiodataEntityImplCopyWithImpl<$Res>
         isMarriageDone: freezed == isMarriageDone
             ? _value.isMarriageDone
             : isMarriageDone // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        requestPracticingStatus: freezed == requestPracticingStatus
+            ? _value.requestPracticingStatus
+            : requestPracticingStatus // ignore: cast_nullable_to_non_nullable
                   as bool?,
         createdAt: freezed == createdAt
             ? _value.createdAt
@@ -615,6 +654,8 @@ class _$BiodataEntityImpl implements _BiodataEntity {
     required this.screenColor,
     required this.nationality,
     required this.maritalStatus,
+    this.religion,
+    this.religiousType,
     this.upzilla,
     this.zilla,
     this.viewsCount,
@@ -623,6 +664,7 @@ class _$BiodataEntityImpl implements _BiodataEntity {
     this.purchasesCount,
     this.isFeatured,
     this.isMarriageDone,
+    this.requestPracticingStatus,
     this.createdAt,
     this.updatedAt,
     this.address,
@@ -659,6 +701,10 @@ class _$BiodataEntityImpl implements _BiodataEntity {
   @override
   final String maritalStatus;
   @override
+  final String? religion;
+  @override
+  final String? religiousType;
+  @override
   final String? upzilla;
   @override
   final String? zilla;
@@ -674,6 +720,8 @@ class _$BiodataEntityImpl implements _BiodataEntity {
   final bool? isFeatured;
   @override
   final bool? isMarriageDone;
+  @override
+  final bool? requestPracticingStatus;
   @override
   final DateTime? createdAt;
   @override
@@ -695,7 +743,7 @@ class _$BiodataEntityImpl implements _BiodataEntity {
 
   @override
   String toString() {
-    return 'BiodataEntity(id: $id, userId: $userId, userIdNumber: $userIdNumber, bioType: $bioType, dateOfBirth: $dateOfBirth, height: $height, gender: $gender, weight: $weight, bloodGroup: $bloodGroup, screenColor: $screenColor, nationality: $nationality, maritalStatus: $maritalStatus, upzilla: $upzilla, zilla: $zilla, viewsCount: $viewsCount, likesCount: $likesCount, dislikesCount: $dislikesCount, purchasesCount: $purchasesCount, isFeatured: $isFeatured, isMarriageDone: $isMarriageDone, createdAt: $createdAt, updatedAt: $updatedAt, address: $address, educationQualification: $educationQualification, personalInfo: $personalInfo, familyStatus: $familyStatus, occupation: $occupation, maritalInfo: $maritalInfo, expectedLifePartner: $expectedLifePartner)';
+    return 'BiodataEntity(id: $id, userId: $userId, userIdNumber: $userIdNumber, bioType: $bioType, dateOfBirth: $dateOfBirth, height: $height, gender: $gender, weight: $weight, bloodGroup: $bloodGroup, screenColor: $screenColor, nationality: $nationality, maritalStatus: $maritalStatus, religion: $religion, religiousType: $religiousType, upzilla: $upzilla, zilla: $zilla, viewsCount: $viewsCount, likesCount: $likesCount, dislikesCount: $dislikesCount, purchasesCount: $purchasesCount, isFeatured: $isFeatured, isMarriageDone: $isMarriageDone, requestPracticingStatus: $requestPracticingStatus, createdAt: $createdAt, updatedAt: $updatedAt, address: $address, educationQualification: $educationQualification, personalInfo: $personalInfo, familyStatus: $familyStatus, occupation: $occupation, maritalInfo: $maritalInfo, expectedLifePartner: $expectedLifePartner)';
   }
 
   @override
@@ -721,6 +769,10 @@ class _$BiodataEntityImpl implements _BiodataEntity {
                 other.nationality == nationality) &&
             (identical(other.maritalStatus, maritalStatus) ||
                 other.maritalStatus == maritalStatus) &&
+            (identical(other.religion, religion) ||
+                other.religion == religion) &&
+            (identical(other.religiousType, religiousType) ||
+                other.religiousType == religiousType) &&
             (identical(other.upzilla, upzilla) || other.upzilla == upzilla) &&
             (identical(other.zilla, zilla) || other.zilla == zilla) &&
             (identical(other.viewsCount, viewsCount) ||
@@ -735,6 +787,11 @@ class _$BiodataEntityImpl implements _BiodataEntity {
                 other.isFeatured == isFeatured) &&
             (identical(other.isMarriageDone, isMarriageDone) ||
                 other.isMarriageDone == isMarriageDone) &&
+            (identical(
+                  other.requestPracticingStatus,
+                  requestPracticingStatus,
+                ) ||
+                other.requestPracticingStatus == requestPracticingStatus) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -769,6 +826,8 @@ class _$BiodataEntityImpl implements _BiodataEntity {
     screenColor,
     nationality,
     maritalStatus,
+    religion,
+    religiousType,
     upzilla,
     zilla,
     viewsCount,
@@ -777,6 +836,7 @@ class _$BiodataEntityImpl implements _BiodataEntity {
     purchasesCount,
     isFeatured,
     isMarriageDone,
+    requestPracticingStatus,
     createdAt,
     updatedAt,
     address,
@@ -811,6 +871,8 @@ abstract class _BiodataEntity implements BiodataEntity {
     required final String screenColor,
     required final String nationality,
     required final String maritalStatus,
+    final String? religion,
+    final String? religiousType,
     final String? upzilla,
     final String? zilla,
     final int? viewsCount,
@@ -819,6 +881,7 @@ abstract class _BiodataEntity implements BiodataEntity {
     final int? purchasesCount,
     final bool? isFeatured,
     final bool? isMarriageDone,
+    final bool? requestPracticingStatus,
     final DateTime? createdAt,
     final DateTime? updatedAt,
     final AddressEntity? address,
@@ -855,6 +918,10 @@ abstract class _BiodataEntity implements BiodataEntity {
   @override
   String get maritalStatus;
   @override
+  String? get religion;
+  @override
+  String? get religiousType;
+  @override
   String? get upzilla;
   @override
   String? get zilla;
@@ -870,6 +937,8 @@ abstract class _BiodataEntity implements BiodataEntity {
   bool? get isFeatured;
   @override
   bool? get isMarriageDone;
+  @override
+  bool? get requestPracticingStatus;
   @override
   DateTime? get createdAt;
   @override

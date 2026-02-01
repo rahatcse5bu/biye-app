@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/constants/religion_constants.dart';
 import '../../providers/biodata_edit_provider.dart';
 
 class GeneralInfoStep extends ConsumerStatefulWidget {
@@ -219,9 +220,80 @@ class _GeneralInfoStepState extends ConsumerState<GeneralInfoStep> {
                   );
             },
           ),
+          const SizedBox(height: 16),
+
+          _buildSectionTitle('ধর্ম *'),
+          _buildDropdown(
+            value: _getReligionDisplayName(model.religion),
+            items: Religion.values.map((r) => r.displayName).toList(),
+            hint: 'ধর্ম নির্বাচন করুন',
+            onChanged: (value) {
+              final religion = Religion.fromDisplayName(value);
+              ref.read(generalInfoEditNotifierProvider.notifier).updateModel(
+                    model.copyWith(
+                      religion: religion?.value ?? 'islam',
+                      religiousType: null, // Reset religious type when religion changes
+                    ),
+                  );
+            },
+          ),
+          const SizedBox(height: 16),
+
+          _buildSectionTitle('ধর্মীয় ধরন *'),
+          _buildDropdown(
+            value: _getReligiousTypeDisplayName(model.religiousType),
+            items: _getReligiousTypesForReligion(model.religion),
+            hint: 'ধর্মীয় ধরন নির্বাচন করুন',
+            onChanged: (value) {
+              final religiousType = _getReligiousTypeFromDisplayName(value, model.religion);
+              ref.read(generalInfoEditNotifierProvider.notifier).updateModel(
+                    model.copyWith(religiousType: religiousType),
+                  );
+            },
+          ),
         ],
       ),
     );
+  }
+
+  String? _getReligionDisplayName(String? religionValue) {
+    if (religionValue == null || religionValue.isEmpty) return null;
+    final religion = Religion.fromValue(religionValue);
+    return religion?.displayName;
+  }
+
+  String? _getReligiousTypeDisplayName(String? religiousTypeValue) {
+    if (religiousTypeValue == null || religiousTypeValue.isEmpty) return null;
+    final religiousType = ReligiousType.fromValue(religiousTypeValue);
+    return religiousType?.displayName;
+  }
+
+  List<String> _getReligiousTypesForReligion(String? religionValue) {
+    if (religionValue == null || religionValue.isEmpty) {
+      // Default to Islam types
+      return ReligiousType.getTypesForReligion(Religion.islam)
+          .map((t) => t.displayName)
+          .toList();
+    }
+    final religion = Religion.fromValue(religionValue);
+    if (religion == null) {
+      return ReligiousType.getTypesForReligion(Religion.islam)
+          .map((t) => t.displayName)
+          .toList();
+    }
+    return ReligiousType.getTypesForReligion(religion)
+        .map((t) => t.displayName)
+        .toList();
+  }
+
+  String? _getReligiousTypeFromDisplayName(String? displayName, String? religionValue) {
+    if (displayName == null || displayName.isEmpty) return null;
+    for (var type in ReligiousType.values) {
+      if (type.displayName == displayName) {
+        return type.value;
+      }
+    }
+    return null;
   }
 
   Widget _buildSectionTitle(String title) {

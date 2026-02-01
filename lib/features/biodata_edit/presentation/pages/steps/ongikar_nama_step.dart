@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_theme.dart';
+import '../../../../../core/constants/religion_constants.dart';
 import '../../providers/biodata_edit_provider.dart';
 
 class OngikarNamaStep extends ConsumerStatefulWidget {
@@ -50,6 +51,12 @@ class _OngikarNamaStepState extends ConsumerState<OngikarNamaStep> {
   }
 
   Widget _buildForm(dynamic model) {
+    final generalInfo = ref.watch(generalInfoEditNotifierProvider);
+    final religiousType = ReligiousType.fromValue(generalInfo.religiousType);
+    final isPracticingType = religiousType == ReligiousType.practicingMuslim ||
+        religiousType == ReligiousType.practicingHindu ||
+        religiousType == ReligiousType.practicingChristian;
+
     return Form(
       key: _formKey,
       child: Column(
@@ -62,7 +69,7 @@ class _OngikarNamaStepState extends ConsumerState<OngikarNamaStep> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Text(
-              'আমি আল্লাহর নামে অঙ্গীকার করছি যে, এখানে যে তথ্যগুলো দেওয়া হয়েছে তা সঠিক। অসত্য বা ভুয়ো তথ্য প্রদানের জন্য এই ওয়েবসাইট কর্তৃপক্ষ দায়ী নয়।',
+              'আমি সৃষ্টিকর্তার নামে অঙ্গীকার করছি যে, এখানে যে তথ্যগুলো দেওয়া হয়েছে তা সঠিক। অসত্য বা ভুয়ো তথ্য প্রদানের জন্য এই ওয়েবসাইট কর্তৃপক্ষ দায়ী নয়।',
               style: TextStyle(
                 fontSize: 14,
                 height: 1.5,
@@ -108,6 +115,60 @@ class _OngikarNamaStepState extends ConsumerState<OngikarNamaStep> {
                   );
             },
           ),
+          
+          // Show "Request Practicing Status" only if user selected a practicing type
+          if (isPracticingType) ...[
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.withOpacity(0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'প্র্যাক্টিসিং স্ট্যাটাস অনুরোধ',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'আপনি প্র্যাক্টিসিং ধর্মীয় ধরন নির্বাচন করেছেন। আপনার প্রোফাইলে প্র্যাক্টিসিং ব্যাজ পেতে চাইলে নিচে টিক দিন। অ্যাডমিন আপনার তথ্য যাচাই করে অনুমোদন দিবেন।',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.black87,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  CheckboxListTile(
+                    value: generalInfo.requestPracticingStatus ?? false,
+                    onChanged: (value) {
+                      ref.read(generalInfoEditNotifierProvider.notifier).updateModel(
+                        generalInfo.copyWith(requestPracticingStatus: value),
+                      );
+                    },
+                    title: const Text(
+                      'প্র্যাক্টিসিং হিসেবে যাচাইয়ের জন্য আবেদন করতে চাই',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: Colors.green,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

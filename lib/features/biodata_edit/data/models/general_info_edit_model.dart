@@ -12,6 +12,9 @@ class GeneralInfoEditModel {
   final String nationality;
   final String maritalStatus;
   final String? zilla;
+  final String? religion; // islam, hinduism, christianity
+  final String? religiousType; // practicing_muslim, general_muslim, practicing_hindu, general_hindu, practicing_christian, general_christian
+  final bool? requestPracticingStatus; // User requests to be marked as practicing
 
   GeneralInfoEditModel({
     this.id,
@@ -27,6 +30,9 @@ class GeneralInfoEditModel {
     required this.nationality,
     required this.maritalStatus,
     this.zilla,
+    this.religion,
+    this.religiousType,
+    this.requestPracticingStatus,
   });
 
   factory GeneralInfoEditModel.fromJson(Map<String, dynamic> json) {
@@ -46,6 +52,9 @@ class GeneralInfoEditModel {
       nationality: json['nationality']?.toString() ?? '',
       maritalStatus: json['marital_status']?.toString() ?? '',
       zilla: json['zilla']?.toString(),
+      religion: json['religion']?.toString(),
+      religiousType: json['religious_type']?.toString(),
+      requestPracticingStatus: json['request_practicing_status'] == true,
     );
   }
 
@@ -65,6 +74,9 @@ class GeneralInfoEditModel {
       'nationality': nationality,
       'marital_status': maritalStatus,
       if (zilla != null) 'zilla': zilla,
+      if (religion != null) 'religion': religion,
+      if (religiousType != null) 'religious_type': religiousType,
+      if (requestPracticingStatus != null) 'request_practicing_status': requestPracticingStatus,
     };
   }
 
@@ -82,6 +94,9 @@ class GeneralInfoEditModel {
     String? nationality,
     String? maritalStatus,
     String? zilla,
+    String? religion,
+    String? religiousType,
+    bool? requestPracticingStatus,
   }) {
     return GeneralInfoEditModel(
       id: id ?? this.id,
@@ -97,6 +112,9 @@ class GeneralInfoEditModel {
       nationality: nationality ?? this.nationality,
       maritalStatus: maritalStatus ?? this.maritalStatus,
       zilla: zilla ?? this.zilla,
+      religion: religion ?? this.religion,
+      religiousType: religiousType ?? this.religiousType,
+      requestPracticingStatus: requestPracticingStatus ?? this.requestPracticingStatus,
     );
   }
 
@@ -120,6 +138,9 @@ class GeneralInfoEditModel {
       screenColor: '',
       nationality: 'বাংলাদেশী',
       maritalStatus: '',
+      religion: 'islam', // Default to Islam
+      religiousType: null,
+      requestPracticingStatus: false,
     );
   }
 }

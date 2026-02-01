@@ -41,6 +41,9 @@ mixin _$BiodataModel {
   String get nationality => throw _privateConstructorUsedError;
   @JsonKey(name: 'marital_status')
   String get maritalStatus => throw _privateConstructorUsedError;
+  String? get religion => throw _privateConstructorUsedError;
+  @JsonKey(name: 'religious_type')
+  String? get religiousType => throw _privateConstructorUsedError;
   String? get upzilla => throw _privateConstructorUsedError;
   String? get zilla => throw _privateConstructorUsedError;
   @JsonKey(name: 'views_count')
@@ -55,6 +58,8 @@ mixin _$BiodataModel {
   bool? get isFeatured => throw _privateConstructorUsedError;
   @JsonKey(name: 'isMarriageDone')
   bool? get isMarriageDone => throw _privateConstructorUsedError;
+  @JsonKey(name: 'request_practicing_status')
+  bool? get requestPracticingStatus => throw _privateConstructorUsedError;
   @JsonKey(name: 'createdAt')
   String? get createdAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'updatedAt')
@@ -100,6 +105,8 @@ abstract class $BiodataModelCopyWith<$Res> {
     @JsonKey(name: 'screen_color') String screenColor,
     String nationality,
     @JsonKey(name: 'marital_status') String maritalStatus,
+    String? religion,
+    @JsonKey(name: 'religious_type') String? religiousType,
     String? upzilla,
     String? zilla,
     @JsonKey(name: 'views_count') int? viewsCount,
@@ -108,6 +115,7 @@ abstract class $BiodataModelCopyWith<$Res> {
     @JsonKey(name: 'purchases_count') int? purchasesCount,
     @JsonKey(name: 'isFeatured') bool? isFeatured,
     @JsonKey(name: 'isMarriageDone') bool? isMarriageDone,
+    @JsonKey(name: 'request_practicing_status') bool? requestPracticingStatus,
     @JsonKey(name: 'createdAt') String? createdAt,
     @JsonKey(name: 'updatedAt') String? updatedAt,
     AddressModel? address,
@@ -156,6 +164,8 @@ class _$BiodataModelCopyWithImpl<$Res, $Val extends BiodataModel>
     Object? screenColor = null,
     Object? nationality = null,
     Object? maritalStatus = null,
+    Object? religion = freezed,
+    Object? religiousType = freezed,
     Object? upzilla = freezed,
     Object? zilla = freezed,
     Object? viewsCount = freezed,
@@ -164,6 +174,7 @@ class _$BiodataModelCopyWithImpl<$Res, $Val extends BiodataModel>
     Object? purchasesCount = freezed,
     Object? isFeatured = freezed,
     Object? isMarriageDone = freezed,
+    Object? requestPracticingStatus = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
     Object? address = freezed,
@@ -224,6 +235,14 @@ class _$BiodataModelCopyWithImpl<$Res, $Val extends BiodataModel>
                 ? _value.maritalStatus
                 : maritalStatus // ignore: cast_nullable_to_non_nullable
                       as String,
+            religion: freezed == religion
+                ? _value.religion
+                : religion // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            religiousType: freezed == religiousType
+                ? _value.religiousType
+                : religiousType // ignore: cast_nullable_to_non_nullable
+                      as String?,
             upzilla: freezed == upzilla
                 ? _value.upzilla
                 : upzilla // ignore: cast_nullable_to_non_nullable
@@ -255,6 +274,10 @@ class _$BiodataModelCopyWithImpl<$Res, $Val extends BiodataModel>
             isMarriageDone: freezed == isMarriageDone
                 ? _value.isMarriageDone
                 : isMarriageDone // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            requestPracticingStatus: freezed == requestPracticingStatus
+                ? _value.requestPracticingStatus
+                : requestPracticingStatus // ignore: cast_nullable_to_non_nullable
                       as bool?,
             createdAt: freezed == createdAt
                 ? _value.createdAt
@@ -422,6 +445,8 @@ abstract class _$$BiodataModelImplCopyWith<$Res>
     @JsonKey(name: 'screen_color') String screenColor,
     String nationality,
     @JsonKey(name: 'marital_status') String maritalStatus,
+    String? religion,
+    @JsonKey(name: 'religious_type') String? religiousType,
     String? upzilla,
     String? zilla,
     @JsonKey(name: 'views_count') int? viewsCount,
@@ -430,6 +455,7 @@ abstract class _$$BiodataModelImplCopyWith<$Res>
     @JsonKey(name: 'purchases_count') int? purchasesCount,
     @JsonKey(name: 'isFeatured') bool? isFeatured,
     @JsonKey(name: 'isMarriageDone') bool? isMarriageDone,
+    @JsonKey(name: 'request_practicing_status') bool? requestPracticingStatus,
     @JsonKey(name: 'createdAt') String? createdAt,
     @JsonKey(name: 'updatedAt') String? updatedAt,
     AddressModel? address,
@@ -484,6 +510,8 @@ class __$$BiodataModelImplCopyWithImpl<$Res>
     Object? screenColor = null,
     Object? nationality = null,
     Object? maritalStatus = null,
+    Object? religion = freezed,
+    Object? religiousType = freezed,
     Object? upzilla = freezed,
     Object? zilla = freezed,
     Object? viewsCount = freezed,
@@ -492,6 +520,7 @@ class __$$BiodataModelImplCopyWithImpl<$Res>
     Object? purchasesCount = freezed,
     Object? isFeatured = freezed,
     Object? isMarriageDone = freezed,
+    Object? requestPracticingStatus = freezed,
     Object? createdAt = freezed,
     Object? updatedAt = freezed,
     Object? address = freezed,
@@ -552,6 +581,14 @@ class __$$BiodataModelImplCopyWithImpl<$Res>
             ? _value.maritalStatus
             : maritalStatus // ignore: cast_nullable_to_non_nullable
                   as String,
+        religion: freezed == religion
+            ? _value.religion
+            : religion // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        religiousType: freezed == religiousType
+            ? _value.religiousType
+            : religiousType // ignore: cast_nullable_to_non_nullable
+                  as String?,
         upzilla: freezed == upzilla
             ? _value.upzilla
             : upzilla // ignore: cast_nullable_to_non_nullable
@@ -583,6 +620,10 @@ class __$$BiodataModelImplCopyWithImpl<$Res>
         isMarriageDone: freezed == isMarriageDone
             ? _value.isMarriageDone
             : isMarriageDone // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        requestPracticingStatus: freezed == requestPracticingStatus
+            ? _value.requestPracticingStatus
+            : requestPracticingStatus // ignore: cast_nullable_to_non_nullable
                   as bool?,
         createdAt: freezed == createdAt
             ? _value.createdAt
@@ -641,6 +682,8 @@ class _$BiodataModelImpl extends _BiodataModel {
     @JsonKey(name: 'screen_color') required this.screenColor,
     required this.nationality,
     @JsonKey(name: 'marital_status') required this.maritalStatus,
+    this.religion,
+    @JsonKey(name: 'religious_type') this.religiousType,
     this.upzilla,
     this.zilla,
     @JsonKey(name: 'views_count') this.viewsCount,
@@ -649,6 +692,7 @@ class _$BiodataModelImpl extends _BiodataModel {
     @JsonKey(name: 'purchases_count') this.purchasesCount,
     @JsonKey(name: 'isFeatured') this.isFeatured,
     @JsonKey(name: 'isMarriageDone') this.isMarriageDone,
+    @JsonKey(name: 'request_practicing_status') this.requestPracticingStatus,
     @JsonKey(name: 'createdAt') this.createdAt,
     @JsonKey(name: 'updatedAt') this.updatedAt,
     this.address,
@@ -696,6 +740,11 @@ class _$BiodataModelImpl extends _BiodataModel {
   @JsonKey(name: 'marital_status')
   final String maritalStatus;
   @override
+  final String? religion;
+  @override
+  @JsonKey(name: 'religious_type')
+  final String? religiousType;
+  @override
   final String? upzilla;
   @override
   final String? zilla;
@@ -717,6 +766,9 @@ class _$BiodataModelImpl extends _BiodataModel {
   @override
   @JsonKey(name: 'isMarriageDone')
   final bool? isMarriageDone;
+  @override
+  @JsonKey(name: 'request_practicing_status')
+  final bool? requestPracticingStatus;
   @override
   @JsonKey(name: 'createdAt')
   final String? createdAt;
@@ -741,7 +793,7 @@ class _$BiodataModelImpl extends _BiodataModel {
 
   @override
   String toString() {
-    return 'BiodataModel(id: $id, userId: $userId, userIdNumber: $userIdNumber, bioType: $bioType, dateOfBirth: $dateOfBirth, height: $height, gender: $gender, weight: $weight, bloodGroup: $bloodGroup, screenColor: $screenColor, nationality: $nationality, maritalStatus: $maritalStatus, upzilla: $upzilla, zilla: $zilla, viewsCount: $viewsCount, likesCount: $likesCount, dislikesCount: $dislikesCount, purchasesCount: $purchasesCount, isFeatured: $isFeatured, isMarriageDone: $isMarriageDone, createdAt: $createdAt, updatedAt: $updatedAt, address: $address, educationQualification: $educationQualification, personalInfo: $personalInfo, familyStatus: $familyStatus, occupation: $occupation, maritalInfo: $maritalInfo, expectedLifePartner: $expectedLifePartner)';
+    return 'BiodataModel(id: $id, userId: $userId, userIdNumber: $userIdNumber, bioType: $bioType, dateOfBirth: $dateOfBirth, height: $height, gender: $gender, weight: $weight, bloodGroup: $bloodGroup, screenColor: $screenColor, nationality: $nationality, maritalStatus: $maritalStatus, religion: $religion, religiousType: $religiousType, upzilla: $upzilla, zilla: $zilla, viewsCount: $viewsCount, likesCount: $likesCount, dislikesCount: $dislikesCount, purchasesCount: $purchasesCount, isFeatured: $isFeatured, isMarriageDone: $isMarriageDone, requestPracticingStatus: $requestPracticingStatus, createdAt: $createdAt, updatedAt: $updatedAt, address: $address, educationQualification: $educationQualification, personalInfo: $personalInfo, familyStatus: $familyStatus, occupation: $occupation, maritalInfo: $maritalInfo, expectedLifePartner: $expectedLifePartner)';
   }
 
   @override
@@ -767,6 +819,10 @@ class _$BiodataModelImpl extends _BiodataModel {
                 other.nationality == nationality) &&
             (identical(other.maritalStatus, maritalStatus) ||
                 other.maritalStatus == maritalStatus) &&
+            (identical(other.religion, religion) ||
+                other.religion == religion) &&
+            (identical(other.religiousType, religiousType) ||
+                other.religiousType == religiousType) &&
             (identical(other.upzilla, upzilla) || other.upzilla == upzilla) &&
             (identical(other.zilla, zilla) || other.zilla == zilla) &&
             (identical(other.viewsCount, viewsCount) ||
@@ -781,6 +837,11 @@ class _$BiodataModelImpl extends _BiodataModel {
                 other.isFeatured == isFeatured) &&
             (identical(other.isMarriageDone, isMarriageDone) ||
                 other.isMarriageDone == isMarriageDone) &&
+            (identical(
+                  other.requestPracticingStatus,
+                  requestPracticingStatus,
+                ) ||
+                other.requestPracticingStatus == requestPracticingStatus) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -816,6 +877,8 @@ class _$BiodataModelImpl extends _BiodataModel {
     screenColor,
     nationality,
     maritalStatus,
+    religion,
+    religiousType,
     upzilla,
     zilla,
     viewsCount,
@@ -824,6 +887,7 @@ class _$BiodataModelImpl extends _BiodataModel {
     purchasesCount,
     isFeatured,
     isMarriageDone,
+    requestPracticingStatus,
     createdAt,
     updatedAt,
     address,
@@ -863,6 +927,8 @@ abstract class _BiodataModel extends BiodataModel {
     @JsonKey(name: 'screen_color') required final String screenColor,
     required final String nationality,
     @JsonKey(name: 'marital_status') required final String maritalStatus,
+    final String? religion,
+    @JsonKey(name: 'religious_type') final String? religiousType,
     final String? upzilla,
     final String? zilla,
     @JsonKey(name: 'views_count') final int? viewsCount,
@@ -871,6 +937,8 @@ abstract class _BiodataModel extends BiodataModel {
     @JsonKey(name: 'purchases_count') final int? purchasesCount,
     @JsonKey(name: 'isFeatured') final bool? isFeatured,
     @JsonKey(name: 'isMarriageDone') final bool? isMarriageDone,
+    @JsonKey(name: 'request_practicing_status')
+    final bool? requestPracticingStatus,
     @JsonKey(name: 'createdAt') final String? createdAt,
     @JsonKey(name: 'updatedAt') final String? updatedAt,
     final AddressModel? address,
@@ -920,6 +988,11 @@ abstract class _BiodataModel extends BiodataModel {
   @JsonKey(name: 'marital_status')
   String get maritalStatus;
   @override
+  String? get religion;
+  @override
+  @JsonKey(name: 'religious_type')
+  String? get religiousType;
+  @override
   String? get upzilla;
   @override
   String? get zilla;
@@ -941,6 +1014,9 @@ abstract class _BiodataModel extends BiodataModel {
   @override
   @JsonKey(name: 'isMarriageDone')
   bool? get isMarriageDone;
+  @override
+  @JsonKey(name: 'request_practicing_status')
+  bool? get requestPracticingStatus;
   @override
   @JsonKey(name: 'createdAt')
   String? get createdAt;

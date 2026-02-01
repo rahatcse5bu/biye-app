@@ -189,6 +189,11 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
                                 ? Icons.female
                                 : Icons.male,
                           ),
+                          if (biodata.religiousType != null && biodata.religiousType!.isNotEmpty)
+                            _buildHeaderChip(
+                              _getReligiousTypeDisplayName(biodata.religiousType!),
+                              Icons.self_improvement,
+                            ),
                         ],
                       ),
                     ),
@@ -370,49 +375,7 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
               
               // Personal Information
               if (biodata.personalInfo != null)
-                _buildSection(
-                  'ব্যক্তিগত তথ্য',
-                  [
-                    if (biodata.personalInfo!.outsideClothings != null)
-                      _buildInfoTile('পোশাক', biodata.personalInfo!.outsideClothings!),
-                    if (biodata.personalInfo!.isBeard != null && biodata.personalInfo!.isBeard!.isNotEmpty)
-                      _buildInfoTile('দাড়ি', biodata.personalInfo!.isBeard!),
-                    if (biodata.personalInfo!.fromBeard != null && biodata.personalInfo!.fromBeard!.isNotEmpty)
-                      _buildInfoTile('দাড়ি রাখা শুরু', biodata.personalInfo!.fromBeard!),
-                    if (biodata.personalInfo!.fromWhenNikhab != null && biodata.personalInfo!.fromWhenNikhab!.isNotEmpty)
-                      _buildInfoTile('নিকাব রাখা শুরু', biodata.personalInfo!.fromWhenNikhab!),
-                    if (biodata.personalInfo!.isDailyFive != null)
-                      _buildInfoTile('পাঁচ ওয়াক্ত নামাজ', biodata.personalInfo!.isDailyFive!),
-                    if (biodata.personalInfo!.isDailyFiveJamaat != null && biodata.personalInfo!.isDailyFiveJamaat!.isNotEmpty)
-                      _buildInfoTile('জামাতে নামাজ', biodata.personalInfo!.isDailyFiveJamaat!),
-                    if (biodata.personalInfo!.qadhaWeekly != null)
-                      _buildInfoTile('কাজা নামাজ', biodata.personalInfo!.qadhaWeekly!),
-                    if (biodata.personalInfo!.quranTilawat != null)
-                      _buildInfoTile('কুরআন তিলাওয়াত', biodata.personalInfo!.quranTilawat!),
-                    if (biodata.personalInfo!.fiqh != null)
-                      _buildInfoTile('ফিকহ', biodata.personalInfo!.fiqh!),
-                    if (biodata.personalInfo!.mahramNonMahram != null)
-                      _buildInfoTile('মাহরাম-নন মাহরাম', biodata.personalInfo!.mahramNonMahram!),
-                    if (biodata.personalInfo!.natokCinema != null)
-                      _buildInfoTile('নাটক/সিনেমা', biodata.personalInfo!.natokCinema!),
-                    if (biodata.personalInfo!.mazar != null)
-                      _buildInfoTile('মাজার সম্পর্কে মত', biodata.personalInfo!.mazar!),
-                    if (biodata.personalInfo!.aboutMiladQiyam != null && biodata.personalInfo!.aboutMiladQiyam!.isNotEmpty)
-                      _buildInfoTile('মিলাদ/ক্বিয়াম সম্পর্কে মত', biodata.personalInfo!.aboutMiladQiyam!),
-                    if (biodata.personalInfo!.islamicBooks != null)
-                      _buildInfoTile('প্রিয় ইসলামিক বই', biodata.personalInfo!.islamicBooks!),
-                    if (biodata.personalInfo!.islamicScholars != null)
-                      _buildInfoTile('প্রিয় ইসলামিক স্কলার', biodata.personalInfo!.islamicScholars!),
-                    if (biodata.personalInfo!.specialDeeniMehnot != null && biodata.personalInfo!.specialDeeniMehnot!.isNotEmpty)
-                      _buildInfoTile('বিশেষ দ্বীনি মেহনত', biodata.personalInfo!.specialDeeniMehnot!),
-                    if (biodata.personalInfo!.isNeshaDrobbo != null)
-                      _buildInfoTile('নেশাজাতীয় দ্রব্য', biodata.personalInfo!.isNeshaDrobbo!),
-                    if (biodata.personalInfo!.physicalProblem != null)
-                      _buildInfoTile('শারীরিক সমস্যা', biodata.personalInfo!.physicalProblem!),
-                    if (biodata.personalInfo!.aboutMe != null)
-                      _buildInfoTile('নিজের সম্পর্কে', biodata.personalInfo!.aboutMe!),
-                  ],
-                ),
+                _buildPersonalInfoSection(biodata),
               
               // Marital Information
               if (biodata.maritalInfo != null)
@@ -1069,6 +1032,208 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
       ),
     );
   }
+
+  Widget _buildPersonalInfoSection(BiodataEntity biodata) {
+    final religion = biodata.religion ?? 'islam';
+    final personalInfo = biodata.personalInfo!;
+    
+    // Build common fields
+    final commonTiles = <Widget>[
+      if (personalInfo.physicalProblem != null && personalInfo.physicalProblem!.isNotEmpty)
+        _buildInfoTile('শারীরিক সমস্যা', personalInfo.physicalProblem!),
+      if (personalInfo.aboutMe != null && personalInfo.aboutMe!.isNotEmpty)
+        _buildInfoTile('নিজের সম্পর্কে', personalInfo.aboutMe!),
+    ];
+    
+    // Build religion-specific tiles
+    List<Widget> religiousTiles;
+    String sectionTitle;
+    
+    switch (religion) {
+      case 'hinduism':
+        sectionTitle = 'হিন্দু ধর্মীয় তথ্য';
+        religiousTiles = _buildHinduPersonalInfoTiles(personalInfo);
+        break;
+      case 'christianity':
+        sectionTitle = 'খ্রিস্টান ধর্মীয় তথ্য';
+        religiousTiles = _buildChristianPersonalInfoTiles(personalInfo);
+        break;
+      case 'islam':
+      default:
+        sectionTitle = 'ইসলামিক ব্যক্তিগত তথ্য';
+        religiousTiles = _buildIslamicPersonalInfoTiles(personalInfo);
+        break;
+    }
+    
+    return _buildSection(sectionTitle, [...religiousTiles, ...commonTiles]);
+  }
+  
+  List<Widget> _buildIslamicPersonalInfoTiles(dynamic personalInfo) {
+    return [
+      if (personalInfo.outsideClothings != null && personalInfo.outsideClothings!.isNotEmpty)
+        _buildInfoTile('পোশাক', personalInfo.outsideClothings!),
+      if (personalInfo.isBeard != null && personalInfo.isBeard!.isNotEmpty)
+        _buildInfoTile('দাড়ি', personalInfo.isBeard!),
+      if (personalInfo.fromBeard != null && personalInfo.fromBeard!.isNotEmpty)
+        _buildInfoTile('দাড়ি রাখা শুরু', personalInfo.fromBeard!),
+      if (personalInfo.fromWhenNikhab != null && personalInfo.fromWhenNikhab!.isNotEmpty)
+        _buildInfoTile('নিকাব রাখা শুরু', personalInfo.fromWhenNikhab!),
+      if (personalInfo.isDailyFive != null && personalInfo.isDailyFive!.isNotEmpty)
+        _buildInfoTile('পাঁচ ওয়াক্ত নামাজ', personalInfo.isDailyFive!),
+      if (personalInfo.isDailyFiveJamaat != null && personalInfo.isDailyFiveJamaat!.isNotEmpty)
+        _buildInfoTile('জামাতে নামাজ', personalInfo.isDailyFiveJamaat!),
+      if (personalInfo.qadhaWeekly != null && personalInfo.qadhaWeekly!.isNotEmpty)
+        _buildInfoTile('কাজা নামাজ', personalInfo.qadhaWeekly!),
+      if (personalInfo.quranTilawat != null && personalInfo.quranTilawat!.isNotEmpty)
+        _buildInfoTile('কুরআন তিলাওয়াত', personalInfo.quranTilawat!),
+      if (personalInfo.fiqh != null && personalInfo.fiqh!.isNotEmpty)
+        _buildInfoTile('মাজহাব', personalInfo.fiqh!),
+      if (personalInfo.mahramNonMahram != null && personalInfo.mahramNonMahram!.isNotEmpty)
+        _buildInfoTile('মাহরাম-নন মাহরাম', personalInfo.mahramNonMahram!),
+      if (personalInfo.natokCinema != null && personalInfo.natokCinema!.isNotEmpty)
+        _buildInfoTile('নাটক/সিনেমা', personalInfo.natokCinema!),
+      if (personalInfo.mazar != null && personalInfo.mazar!.isNotEmpty)
+        _buildInfoTile('মাজার সম্পর্কে মত', personalInfo.mazar!),
+      if (personalInfo.aboutMiladQiyam != null && personalInfo.aboutMiladQiyam!.isNotEmpty)
+        _buildInfoTile('মিলাদ/ক্বিয়াম সম্পর্কে মত', personalInfo.aboutMiladQiyam!),
+      if (personalInfo.islamicBooks != null && personalInfo.islamicBooks!.isNotEmpty)
+        _buildInfoTile('দ্বীনি জ্ঞানের উৎস', personalInfo.islamicBooks!),
+      if (personalInfo.islamicScholars != null && personalInfo.islamicScholars!.isNotEmpty)
+        _buildInfoTile('প্রিয় ইসলামিক স্কলার', personalInfo.islamicScholars!),
+      if (personalInfo.specialDeeniMehnot != null && personalInfo.specialDeeniMehnot!.isNotEmpty)
+        _buildInfoTile('বিশেষ দ্বীনি মেহনত', personalInfo.specialDeeniMehnot!),
+      if (personalInfo.isNeshaDrobbo != null && personalInfo.isNeshaDrobbo!.isNotEmpty)
+        _buildInfoTile('নেশাজাতীয় দ্রব্য', personalInfo.isNeshaDrobbo!),
+    ];
+  }
+  
+  List<Widget> _buildHinduPersonalInfoTiles(dynamic personalInfo) {
+    return [
+      // ধর্মীয় পরিচয়
+      if (personalInfo.sampraday != null && personalInfo.sampraday!.isNotEmpty)
+        _buildInfoTile('সম্প্রদায়', personalInfo.sampraday!),
+      if (personalInfo.subSampraday != null && personalInfo.subSampraday!.isNotEmpty)
+        _buildInfoTile('উপ-সম্প্রদায়', personalInfo.subSampraday!),
+      
+      // জাতি ও গোত্র
+      if (personalInfo.caste != null && personalInfo.caste!.isNotEmpty)
+        _buildInfoTile('বর্ণ/জাতি', personalInfo.caste!),
+      if (personalInfo.subCaste != null && personalInfo.subCaste!.isNotEmpty)
+        _buildInfoTile('উপ-জাতি', personalInfo.subCaste!),
+      if (personalInfo.gotra != null && personalInfo.gotra!.isNotEmpty)
+        _buildInfoTile('গোত্র', personalInfo.gotra!),
+      
+      // ধর্মীয় অনুশীলন
+      if (personalInfo.beliefInGod != null && personalInfo.beliefInGod!.isNotEmpty)
+        _buildInfoTile('ঈশ্বরে বিশ্বাস', personalInfo.beliefInGod!),
+      if (personalInfo.religiousPracticeLevel != null && personalInfo.religiousPracticeLevel!.isNotEmpty)
+        _buildInfoTile('ধর্মাচরণ', personalInfo.religiousPracticeLevel!),
+      if (personalInfo.regularPooja != null && personalInfo.regularPooja!.isNotEmpty)
+        _buildInfoTile('নিয়মিত পূজা', personalInfo.regularPooja!),
+      if (personalInfo.vratObservance != null && personalInfo.vratObservance!.isNotEmpty)
+        _buildInfoTile('ব্রত/উপবাস', personalInfo.vratObservance!),
+      if (personalInfo.templeVisitFrequency != null && personalInfo.templeVisitFrequency!.isNotEmpty)
+        _buildInfoTile('মন্দিরে যাওয়া', personalInfo.templeVisitFrequency!),
+      
+      // উপাস্য দেবতা
+      if (personalInfo.ishtaDevata != null && personalInfo.ishtaDevata!.isNotEmpty)
+        _buildInfoTile('ইষ্ট দেবতা', personalInfo.ishtaDevata!),
+      if (personalInfo.kulDevata != null && personalInfo.kulDevata!.isNotEmpty)
+        _buildInfoTile('কুলদেবতা/কুলদেবী', personalInfo.kulDevata!),
+      if (personalInfo.spiritualGuide != null && personalInfo.spiritualGuide!.isNotEmpty)
+        _buildInfoTile('আধ্যাত্মিক গুরু', personalInfo.spiritualGuide!),
+      
+      // খাদ্যাভ্যাস ও জীবনধারা
+      if (personalInfo.foodHabit != null && personalInfo.foodHabit!.isNotEmpty)
+        _buildInfoTile('খাদ্যাভ্যাস', personalInfo.foodHabit!),
+      if (personalInfo.alcoholConsumption != null && personalInfo.alcoholConsumption!.isNotEmpty)
+        _buildInfoTile('মদ্যপান', personalInfo.alcoholConsumption!),
+      if (personalInfo.smoking != null && personalInfo.smoking!.isNotEmpty)
+        _buildInfoTile('ধূমপান', personalInfo.smoking!),
+      
+      // বিবাহ সম্পর্কিত
+      if (personalInfo.marriageView != null && personalInfo.marriageView!.isNotEmpty)
+        _buildInfoTile('বিবাহ দৃষ্টিভঙ্গি', personalInfo.marriageView!),
+      if (personalInfo.vedicMarriageInterest != null && personalInfo.vedicMarriageInterest!.isNotEmpty)
+        _buildInfoTile('বৈদিক বিবাহে আগ্রহ', personalInfo.vedicMarriageInterest!),
+      if (personalInfo.kundaliMatchingBelief != null && personalInfo.kundaliMatchingBelief!.isNotEmpty)
+        _buildInfoTile('কুণ্ডলী মিলান', personalInfo.kundaliMatchingBelief!),
+      
+      // জ্যোতিষ তথ্য
+      if (personalInfo.birthTime != null && personalInfo.birthTime!.isNotEmpty)
+        _buildInfoTile('জন্ম সময়', personalInfo.birthTime!),
+      if (personalInfo.rashi != null && personalInfo.rashi!.isNotEmpty)
+        _buildInfoTile('রাশি', personalInfo.rashi!),
+      if (personalInfo.mangalikStatus != null && personalInfo.mangalikStatus!.isNotEmpty)
+        _buildInfoTile('মাঙ্গলিক অবস্থা', personalInfo.mangalikStatus!),
+      
+      // প্রত্যাশা
+      if (personalInfo.partnerReligiousExpectation != null && personalInfo.partnerReligiousExpectation!.isNotEmpty)
+        _buildInfoTile('ধর্মীয় প্রত্যাশা', personalInfo.partnerReligiousExpectation!),
+      if (personalInfo.religiousFlexibility != null && personalInfo.religiousFlexibility!.isNotEmpty)
+        _buildInfoTile('ধর্মীয় নমনীয়তা', personalInfo.religiousFlexibility!),
+    ];
+  }
+  
+  List<Widget> _buildChristianPersonalInfoTiles(dynamic personalInfo) {
+    return [
+      // ধর্মীয় পরিচয়
+      if (personalInfo.denomination != null && personalInfo.denomination!.isNotEmpty)
+        _buildInfoTile('সম্প্রদায়', personalInfo.denomination!),
+      if (personalInfo.churchName != null && personalInfo.churchName!.isNotEmpty)
+        _buildInfoTile('চার্চের নাম', personalInfo.churchName!),
+      
+      // বিশ্বাস ও আধ্যাত্মিকতা
+      if (personalInfo.beliefInGod != null && personalInfo.beliefInGod!.isNotEmpty)
+        _buildInfoTile('ঈশ্বরে বিশ্বাস', personalInfo.beliefInGod!),
+      if (personalInfo.religiousPracticeLevel != null && personalInfo.religiousPracticeLevel!.isNotEmpty)
+        _buildInfoTile('ধর্মচর্চার মাত্রা', personalInfo.religiousPracticeLevel!),
+      if (personalInfo.bibleReadingFrequency != null && personalInfo.bibleReadingFrequency!.isNotEmpty)
+        _buildInfoTile('বাইবেল পাঠ', personalInfo.bibleReadingFrequency!),
+      
+      // চার্চ ও উপাসনা
+      if (personalInfo.churchAttendance != null && personalInfo.churchAttendance!.isNotEmpty)
+        _buildInfoTile('চার্চে যাওয়া', personalInfo.churchAttendance!),
+      if (personalInfo.churchActivityParticipation != null && personalInfo.churchActivityParticipation!.isNotEmpty)
+        _buildInfoTile('চার্চ কার্যক্রম', personalInfo.churchActivityParticipation!),
+      
+      // ধর্মীয় আচার
+      if (personalInfo.baptismStatus != null && personalInfo.baptismStatus!.isNotEmpty)
+        _buildInfoTile('বাপ্তিস্ম', personalInfo.baptismStatus!),
+      if (personalInfo.confirmationStatus != null && personalInfo.confirmationStatus!.isNotEmpty)
+        _buildInfoTile('কনফার্মেশন', personalInfo.confirmationStatus!),
+      
+      // জীবনধারা
+      if (personalInfo.religiousValueImportance != null && personalInfo.religiousValueImportance!.isNotEmpty)
+        _buildInfoTile('ধর্মীয় মূল্যবোধ', personalInfo.religiousValueImportance!),
+      if (personalInfo.followsChristianEthics != null && personalInfo.followsChristianEthics!.isNotEmpty)
+        _buildInfoTile('খ্রিস্টীয় নৈতিকতা', personalInfo.followsChristianEthics!),
+      if (personalInfo.alcoholConsumption != null && personalInfo.alcoholConsumption!.isNotEmpty)
+        _buildInfoTile('মদ্যপান', personalInfo.alcoholConsumption!),
+      if (personalInfo.smoking != null && personalInfo.smoking!.isNotEmpty)
+        _buildInfoTile('ধূমপান', personalInfo.smoking!),
+      
+      // বিবাহ সম্পর্কিত
+      if (personalInfo.marriageView != null && personalInfo.marriageView!.isNotEmpty)
+        _buildInfoTile('বিবাহ দৃষ্টিভঙ্গি', personalInfo.marriageView!),
+      if (personalInfo.churchWeddingPreference != null && personalInfo.churchWeddingPreference!.isNotEmpty)
+        _buildInfoTile('চার্চে বিবাহ', personalInfo.churchWeddingPreference!),
+      if (personalInfo.christianPartnerPreference != null && personalInfo.christianPartnerPreference!.isNotEmpty)
+        _buildInfoTile('খ্রিস্টান সঙ্গী', personalInfo.christianPartnerPreference!),
+      
+      // সন্তান পালন
+      if (personalInfo.childrenReligiousEducation != null && personalInfo.childrenReligiousEducation!.isNotEmpty)
+        _buildInfoTile('সন্তানের ধর্মীয় শিক্ষা', personalInfo.childrenReligiousEducation!),
+      
+      // প্রত্যাশা
+      if (personalInfo.partnerReligiousExpectation != null && personalInfo.partnerReligiousExpectation!.isNotEmpty)
+        _buildInfoTile('ধর্মীয় প্রত্যাশা', personalInfo.partnerReligiousExpectation!),
+      if (personalInfo.expectsPartnerCooperation != null && personalInfo.expectsPartnerCooperation!.isNotEmpty)
+        _buildInfoTile('সঙ্গীর সহযোগিতা', personalInfo.expectsPartnerCooperation!),
+      if (personalInfo.religiousFlexibility != null && personalInfo.religiousFlexibility!.isNotEmpty)
+        _buildInfoTile('ধর্মীয় নমনীয়তা', personalInfo.religiousFlexibility!),
+    ];
+  }
   
   Widget _buildSection(String title, List<Widget> children) {
     return Padding(
@@ -1517,5 +1682,24 @@ class _BiodataDetailPageState extends ConsumerState<BiodataDetailPage> {
         ],
       ),
     );
+  }
+  
+  String _getReligiousTypeDisplayName(String religiousType) {
+    switch (religiousType) {
+      case 'practicing_muslim':
+        return 'প্র্যাক্টিসিং মুসলিম';
+      case 'general_muslim':
+        return 'সাধারণ মুসলিম';
+      case 'practicing_hindu':
+        return 'প্র্যাক্টিসিং হিন্দু';
+      case 'general_hindu':
+        return 'সাধারণ হিন্দু';
+      case 'practicing_christian':
+        return 'প্র্যাক্টিসিং খ্রিস্টান';
+      case 'general_christian':
+        return 'সাধারণ খ্রিস্টান';
+      default:
+        return religiousType;
+    }
   }
 }
