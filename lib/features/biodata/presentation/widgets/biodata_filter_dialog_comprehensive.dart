@@ -21,10 +21,10 @@ class _ComprehensiveBiodataFilterDialogState
     extends State<ComprehensiveBiodataFilterDialog> {
   late Map<String, dynamic> _filters;
   final _permanentAddressController = TextEditingController();
-  
+
   // Age range
   RangeValues _ageRange = const RangeValues(18, 60);
-  
+
   // Height range (in feet, converted to cm for API)
   RangeValues _heightRange = const RangeValues(5.0, 7.0);
 
@@ -45,10 +45,14 @@ class _ComprehensiveBiodataFilterDialogState
   Set<String> _selectedEconomicStatus = {};
   Set<String> _selectedCategories = {};
 
+  // Religion filter
+  String? _selectedReligion;
+  String? _selectedReligiousType;
+
   // Address service
   final AddressService _addressService = AddressService.instance;
   bool _isAddressDataLoaded = false;
-  
+
   // Location data (loaded from JSON)
   List<String> _divisions = [];
   List<String> _currentDistricts = [];
@@ -71,8 +75,11 @@ class _ComprehensiveBiodataFilterDialogState
     });
     _initializeFromFilters();
   }
-  
-  void _updateDistrictsForDivisions(Set<String> divisions, {bool isPresent = false}) {
+
+  void _updateDistrictsForDivisions(
+    Set<String> divisions, {
+    bool isPresent = false,
+  }) {
     if (divisions.isEmpty) {
       setState(() {
         if (isPresent) {
@@ -83,14 +90,14 @@ class _ComprehensiveBiodataFilterDialogState
       });
       return;
     }
-    
+
     // Combine districts from all selected divisions
     final Set<String> allDistricts = {};
     for (final division in divisions) {
       final districts = _addressService.getDistrictsByDivision(division);
       allDistricts.addAll(districts);
     }
-    
+
     setState(() {
       if (isPresent) {
         _presentDistricts = allDistricts.toList()..sort();
@@ -99,8 +106,11 @@ class _ComprehensiveBiodataFilterDialogState
       }
     });
   }
-  
-  void _updateUpazilasForDistricts(Set<String> districts, {bool isPresent = false}) {
+
+  void _updateUpazilasForDistricts(
+    Set<String> districts, {
+    bool isPresent = false,
+  }) {
     if (districts.isEmpty) {
       setState(() {
         if (isPresent) {
@@ -111,14 +121,14 @@ class _ComprehensiveBiodataFilterDialogState
       });
       return;
     }
-    
+
     // Combine upazilas from all selected districts
     final Set<String> allUpazilas = {};
     for (final district in districts) {
       final upazilas = _addressService.getUpazilasByDistrict(district);
       allUpazilas.addAll(upazilas);
     }
-    
+
     setState(() {
       if (isPresent) {
         _presentUpazilas = allUpazilas.toList()..sort();
@@ -130,15 +140,32 @@ class _ComprehensiveBiodataFilterDialogState
 
   void _initializeFromFilters() {
     // Initialize from existing filters
-    if (_filters['minAge'] != null) _ageRange = RangeValues((_filters['minAge'] as num).toDouble(), _ageRange.end);
-    if (_filters['maxAge'] != null) _ageRange = RangeValues(_ageRange.start, (_filters['maxAge'] as num).toDouble());
-    
+    if (_filters['minAge'] != null)
+      _ageRange = RangeValues(
+        (_filters['minAge'] as num).toDouble(),
+        _ageRange.end,
+      );
+    if (_filters['maxAge'] != null)
+      _ageRange = RangeValues(
+        _ageRange.start,
+        (_filters['maxAge'] as num).toDouble(),
+      );
+
     // Height is in feet format (e.g., 5.1 means 5 feet 1 inch)
-    if (_filters['minHeight'] != null) _heightRange = RangeValues((_filters['minHeight'] as num).toDouble(), _heightRange.end);
-    if (_filters['maxHeight'] != null) _heightRange = RangeValues(_heightRange.start, (_filters['maxHeight'] as num).toDouble());
-    
+    if (_filters['minHeight'] != null)
+      _heightRange = RangeValues(
+        (_filters['minHeight'] as num).toDouble(),
+        _heightRange.end,
+      );
+    if (_filters['maxHeight'] != null)
+      _heightRange = RangeValues(
+        _heightRange.start,
+        (_filters['maxHeight'] as num).toDouble(),
+      );
+
     // Initialize permanent address selections (comma-separated values) and load cascading data
-    if (_filters['division'] != null && _filters['division'].toString().isNotEmpty) {
+    if (_filters['division'] != null &&
+        _filters['division'].toString().isNotEmpty) {
       _selectedDivisions = _filters['division'].toString().split(',').toSet();
       _updateDistrictsForDivisions(_selectedDivisions, isPresent: false);
     }
@@ -146,27 +173,40 @@ class _ComprehensiveBiodataFilterDialogState
       _selectedDistricts = _filters['zilla'].toString().split(',').toSet();
       _updateUpazilasForDistricts(_selectedDistricts, isPresent: false);
     }
-    if (_filters['upazila'] != null && _filters['upazila'].toString().isNotEmpty) {
+    if (_filters['upazila'] != null &&
+        _filters['upazila'].toString().isNotEmpty) {
       _selectedUpazilas = _filters['upazila'].toString().split(',').toSet();
     }
-    
+
     // Initialize present address selections (comma-separated values) and load cascading data
-    if (_filters['current_division'] != null && _filters['current_division'].toString().isNotEmpty) {
-      _selectedPresentDivisions = _filters['current_division'].toString().split(',').toSet();
+    if (_filters['current_division'] != null &&
+        _filters['current_division'].toString().isNotEmpty) {
+      _selectedPresentDivisions = _filters['current_division']
+          .toString()
+          .split(',')
+          .toSet();
       _updateDistrictsForDivisions(_selectedPresentDivisions, isPresent: true);
     }
-    if (_filters['current_zilla'] != null && _filters['current_zilla'].toString().isNotEmpty) {
-      _selectedPresentDistricts = _filters['current_zilla'].toString().split(',').toSet();
+    if (_filters['current_zilla'] != null &&
+        _filters['current_zilla'].toString().isNotEmpty) {
+      _selectedPresentDistricts = _filters['current_zilla']
+          .toString()
+          .split(',')
+          .toSet();
       _updateUpazilasForDistricts(_selectedPresentDistricts, isPresent: true);
     }
-    if (_filters['current_upzilla'] != null && _filters['current_upzilla'].toString().isNotEmpty) {
-      _selectedPresentUpazilas = _filters['current_upzilla'].toString().split(',').toSet();
+    if (_filters['current_upzilla'] != null &&
+        _filters['current_upzilla'].toString().isNotEmpty) {
+      _selectedPresentUpazilas = _filters['current_upzilla']
+          .toString()
+          .split(',')
+          .toSet();
     }
-    
+
     if (_filters['permanent_address'] != null) {
       _permanentAddressController.text = _filters['permanent_address'];
     }
-    
+
     // Initialize sets
     _selectedEducationMedium = Set.from(_filters['education_medium'] ?? []);
     _selectedDeeniEdu = Set.from(_filters['deeni_edu'] ?? []);
@@ -175,6 +215,10 @@ class _ComprehensiveBiodataFilterDialogState
     _selectedOccupation = Set.from(_filters['occupation'] ?? []);
     _selectedEconomicStatus = Set.from(_filters['economic_status'] ?? []);
     _selectedCategories = Set.from(_filters['categories'] ?? []);
+
+    // Initialize religion filters
+    _selectedReligion = _filters['religion'] as String?;
+    _selectedReligiousType = _filters['religious_type'] as String?;
   }
 
   @override
@@ -208,17 +252,21 @@ class _ComprehensiveBiodataFilterDialogState
       _selectedOccupation.clear();
       _selectedEconomicStatus.clear();
       _selectedCategories.clear();
+      // Clear religion filters
+      _selectedReligion = null;
+      _selectedReligiousType = null;
     });
   }
 
   void _applyFilters() {
     // Build filter map
     final filters = <String, dynamic>{};
-    
+
     // Basic filters
     if (_filters['bioType'] != null) filters['bio_type'] = _filters['bioType'];
-    if (_filters['maritalStatus'] != null) filters['marital_status'] = _filters['maritalStatus'];
-    
+    if (_filters['maritalStatus'] != null)
+      filters['marital_status'] = _filters['maritalStatus'];
+
     // Permanent address - use comma-separated values for multi-select
     if (_selectedDivisions.isNotEmpty) {
       filters['division'] = _selectedDivisions.join(',');
@@ -229,7 +277,7 @@ class _ComprehensiveBiodataFilterDialogState
     if (_selectedUpazilas.isNotEmpty) {
       filters['upazila'] = _selectedUpazilas.join(',');
     }
-    
+
     // Present/Current address - use comma-separated values for multi-select
     if (_selectedPresentDivisions.isNotEmpty) {
       filters['current_division'] = _selectedPresentDivisions.join(',');
@@ -240,20 +288,20 @@ class _ComprehensiveBiodataFilterDialogState
     if (_selectedPresentUpazilas.isNotEmpty) {
       filters['current_upzilla'] = _selectedPresentUpazilas.join(',');
     }
-    
+
     // Age range
     filters['minAge'] = _ageRange.start.round();
     filters['maxAge'] = _ageRange.end.round();
-    
+
     // Height range (in feet format, e.g., 5.1 means 5 feet 1 inch)
     filters['minHeight'] = double.parse(_heightRange.start.toStringAsFixed(1));
     filters['maxHeight'] = double.parse(_heightRange.end.toStringAsFixed(1));
-    
+
     // Address
     if (_permanentAddressController.text.isNotEmpty) {
       filters['permanent_address'] = _permanentAddressController.text;
     }
-    
+
     // Multi-select filters
     if (_selectedEducationMedium.isNotEmpty) {
       filters['education_medium'] = _selectedEducationMedium.join(',');
@@ -276,7 +324,15 @@ class _ComprehensiveBiodataFilterDialogState
     if (_selectedCategories.isNotEmpty) {
       filters['categories'] = _selectedCategories.join(',');
     }
-    
+
+    // Religion filters
+    if (_selectedReligion != null && _selectedReligion!.isNotEmpty) {
+      filters['religion'] = _selectedReligion;
+    }
+    if (_selectedReligiousType != null && _selectedReligiousType!.isNotEmpty) {
+      filters['religious_type'] = _selectedReligiousType;
+    }
+
     widget.onApplyFilters(filters);
     Navigator.pop(context);
   }
@@ -287,7 +343,9 @@ class _ComprehensiveBiodataFilterDialogState
       insetPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
       child: Container(
         width: double.infinity,
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -333,8 +391,16 @@ class _ComprehensiveBiodataFilterDialogState
                       spacing: 8.w,
                       runSpacing: 8.h,
                       children: [
-                        _buildChip('পাত্রের বায়োডাটা', 'bioType', 'পাত্রের বায়োডাটা'),
-                        _buildChip('পাত্রীর বায়োডাটা', 'bioType', 'পাত্রীর বায়োডাটা'),
+                        _buildChip(
+                          'পাত্রের বায়োডাটা',
+                          'bioType',
+                          'পাত্রের বায়োডাটা',
+                        ),
+                        _buildChip(
+                          'পাত্রীর বায়োডাটা',
+                          'bioType',
+                          'পাত্রীর বায়োডাটা',
+                        ),
                       ],
                     ),
                     SizedBox(height: 16.h),
@@ -355,14 +421,44 @@ class _ComprehensiveBiodataFilterDialogState
                     ),
                     SizedBox(height: 16.h),
 
+                    // Religion Filter
+                    _buildSectionTitle('ধর্ম'),
+                    SizedBox(height: 8.h),
+                    Wrap(
+                      spacing: 8.w,
+                      runSpacing: 8.h,
+                      children: [
+                        _buildReligionChip('ইসলাম', 'islam'),
+                        _buildReligionChip('হিন্দু', 'hinduism'),
+                        _buildReligionChip('খ্রিস্টান', 'christianity'),
+                      ],
+                    ),
+                    if (_selectedReligion != null) ...[
+                      SizedBox(height: 12.h),
+                      _buildSectionTitle('ধর্মীয় ধরন'),
+                      SizedBox(height: 8.h),
+                      Wrap(
+                        spacing: 8.w,
+                        runSpacing: 8.h,
+                        children: _buildReligiousTypeChips(),
+                      ),
+                    ],
+                    SizedBox(height: 16.h),
+
                     // Age Range
                     _buildSectionTitle('বয়স'),
                     SizedBox(height: 8.h),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('${_ageRange.start.round()} বছর', style: TextStyle(fontSize: 12.sp)),
-                        Text('${_ageRange.end.round()} বছর', style: TextStyle(fontSize: 12.sp)),
+                        Text(
+                          '${_ageRange.start.round()} বছর',
+                          style: TextStyle(fontSize: 12.sp),
+                        ),
+                        Text(
+                          '${_ageRange.end.round()} বছর',
+                          style: TextStyle(fontSize: 12.sp),
+                        ),
                       ],
                     ),
                     RangeSlider(
@@ -414,11 +510,15 @@ class _ComprehensiveBiodataFilterDialogState
                             _selectedUpazilas.clear();
                             _currentUpazilas = [];
                           });
-                          _updateDistrictsForDivisions(_selectedDivisions, isPresent: false);
+                          _updateDistrictsForDivisions(
+                            _selectedDivisions,
+                            isPresent: false,
+                          );
                         },
                       ),
                     ],
-                    if (_selectedDivisions.isNotEmpty && _currentDistricts.isNotEmpty) ...[
+                    if (_selectedDivisions.isNotEmpty &&
+                        _currentDistricts.isNotEmpty) ...[
                       SizedBox(height: 8.h),
                       // District Multi-Select
                       _buildMultiSelectSection(
@@ -435,11 +535,15 @@ class _ComprehensiveBiodataFilterDialogState
                             // Clear dependent selections when districts change
                             _selectedUpazilas.clear();
                           });
-                          _updateUpazilasForDistricts(_selectedDistricts, isPresent: false);
+                          _updateUpazilasForDistricts(
+                            _selectedDistricts,
+                            isPresent: false,
+                          );
                         },
                       ),
                     ],
-                    if (_selectedDistricts.isNotEmpty && _currentUpazilas.isNotEmpty) ...[
+                    if (_selectedDistricts.isNotEmpty &&
+                        _currentUpazilas.isNotEmpty) ...[
                       SizedBox(height: 8.h),
                       // Upazila Multi-Select
                       _buildMultiSelectSection(
@@ -460,92 +564,101 @@ class _ComprehensiveBiodataFilterDialogState
                     SizedBox(height: 16.h),
 
                     // Expandable Advanced Filters Section
-                    _buildExpandableSection(
-                      'বিস্তারিত ফিল্টার',
-                      [
-                        // Present Address
-                        _buildSectionTitle('বর্তমান ঠিকানা', fontSize: 14.sp),
+                    _buildExpandableSection('বিস্তারিত ফিল্টার', [
+                      // Present Address
+                      _buildSectionTitle('বর্তমান ঠিকানা', fontSize: 14.sp),
+                      SizedBox(height: 8.h),
+                      // Present Division Multi-Select
+                      _buildMultiSelectSection(
+                        'বিভাগ নির্বাচন করুন',
+                        _divisions,
+                        _selectedPresentDivisions,
+                        (item, selected) {
+                          setState(() {
+                            if (selected) {
+                              _selectedPresentDivisions.add(item);
+                            } else {
+                              _selectedPresentDivisions.remove(item);
+                            }
+                            // Clear dependent selections when divisions change
+                            _selectedPresentDistricts.clear();
+                            _selectedPresentUpazilas.clear();
+                            _presentUpazilas = [];
+                          });
+                          _updateDistrictsForDivisions(
+                            _selectedPresentDivisions,
+                            isPresent: true,
+                          );
+                        },
+                      ),
+                      if (_selectedPresentDivisions.isNotEmpty &&
+                          _presentDistricts.isNotEmpty) ...[
                         SizedBox(height: 8.h),
-                        // Present Division Multi-Select
+                        // Present District Multi-Select
                         _buildMultiSelectSection(
-                          'বিভাগ নির্বাচন করুন',
-                          _divisions,
-                          _selectedPresentDivisions,
+                          'জেলা নির্বাচন করুন',
+                          _presentDistricts,
+                          _selectedPresentDistricts,
                           (item, selected) {
                             setState(() {
                               if (selected) {
-                                _selectedPresentDivisions.add(item);
+                                _selectedPresentDistricts.add(item);
                               } else {
-                                _selectedPresentDivisions.remove(item);
+                                _selectedPresentDistricts.remove(item);
                               }
-                              // Clear dependent selections when divisions change
-                              _selectedPresentDistricts.clear();
+                              // Clear dependent selections when districts change
                               _selectedPresentUpazilas.clear();
-                              _presentUpazilas = [];
                             });
-                            _updateDistrictsForDivisions(_selectedPresentDivisions, isPresent: true);
+                            _updateUpazilasForDistricts(
+                              _selectedPresentDistricts,
+                              isPresent: true,
+                            );
                           },
                         ),
-                        if (_selectedPresentDivisions.isNotEmpty && _presentDistricts.isNotEmpty) ...[
-                          SizedBox(height: 8.h),
-                          // Present District Multi-Select
-                          _buildMultiSelectSection(
-                            'জেলা নির্বাচন করুন',
-                            _presentDistricts,
-                            _selectedPresentDistricts,
-                            (item, selected) {
-                              setState(() {
-                                if (selected) {
-                                  _selectedPresentDistricts.add(item);
-                                } else {
-                                  _selectedPresentDistricts.remove(item);
-                                }
-                                // Clear dependent selections when districts change
-                                _selectedPresentUpazilas.clear();
-                              });
-                              _updateUpazilasForDistricts(_selectedPresentDistricts, isPresent: true);
-                            },
-                          ),
-                        ],
-                        if (_selectedPresentDistricts.isNotEmpty && _presentUpazilas.isNotEmpty) ...[
-                          SizedBox(height: 8.h),
-                          // Present Upazila Multi-Select
-                          _buildMultiSelectSection(
-                            'উপজেলা নির্বাচন করুন',
-                            _presentUpazilas,
-                            _selectedPresentUpazilas,
-                            (item, selected) {
-                              setState(() {
-                                if (selected) {
-                                  _selectedPresentUpazilas.add(item);
-                                } else {
-                                  _selectedPresentUpazilas.remove(item);
-                                }
-                              });
-                            },
-                          ),
-                        ],
-                        SizedBox(height: 16.h),
                       ],
-                    ),
+                      if (_selectedPresentDistricts.isNotEmpty &&
+                          _presentUpazilas.isNotEmpty) ...[
+                        SizedBox(height: 8.h),
+                        // Present Upazila Multi-Select
+                        _buildMultiSelectSection(
+                          'উপজেলা নির্বাচন করুন',
+                          _presentUpazilas,
+                          _selectedPresentUpazilas,
+                          (item, selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedPresentUpazilas.add(item);
+                              } else {
+                                _selectedPresentUpazilas.remove(item);
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                      SizedBox(height: 16.h),
+                    ]),
                     SizedBox(height: 16.h),
 
                     // Address Section - Moved from here
                     // Now showing permanently above instead of in expandable section
 
                     // Education Section
-                    _buildExpandableSection(
-                      'শিক্ষা',
-                      [
-                        _buildSectionTitle('পড়াশোনার মাধ্যম', fontSize: 14.sp),
-                        SizedBox(height: 8.h),
-                        _buildCheckboxGroup([
-                          'জেনারেল',
-                          'কওমী',
-                          'আলিয়া',
-                        ], _selectedEducationMedium),
+                    _buildExpandableSection('শিক্ষা', [
+                      _buildSectionTitle('পড়াশোনার মাধ্যম', fontSize: 14.sp),
+                      SizedBox(height: 8.h),
+                      _buildCheckboxGroup([
+                        'জেনারেল',
+                        // Islamic education mediums - only show for Islam or no religion selected
+                        if (_showIslamicOptions) 'কওমী',
+                        if (_showIslamicOptions) 'আলিয়া',
+                      ], _selectedEducationMedium),
+                      // দ্বীনি শিক্ষা - only show for Islam or no religion selected
+                      if (_showIslamicOptions) ...[
                         SizedBox(height: 12.h),
-                        _buildSectionTitle('দ্বীনি শিক্ষার যোগ্যতা', fontSize: 14.sp),
+                        _buildSectionTitle(
+                          'দ্বীনি শিক্ষার যোগ্যতা',
+                          fontSize: 14.sp,
+                        ),
                         SizedBox(height: 8.h),
                         _buildCheckboxGroup([
                           'হাফেজ',
@@ -556,48 +669,54 @@ class _ComprehensiveBiodataFilterDialogState
                           'ফাজিল',
                         ], _selectedDeeniEdu),
                       ],
-                    ),
+                    ]),
                     SizedBox(height: 16.h),
 
                     // Personal Section
-                    _buildExpandableSection(
-                      'ব্যক্তিগত',
-                      [
-                        _buildSectionTitle('উচ্চতা', fontSize: 14.sp),
-                        SizedBox(height: 8.h),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('${_heightRange.start.toStringAsFixed(1)}\' ফুট', style: TextStyle(fontSize: 12.sp)),
-                            Text('${_heightRange.end.toStringAsFixed(1)}\' ফুট', style: TextStyle(fontSize: 12.sp)),
-                          ],
-                        ),
-                        RangeSlider(
-                          values: _heightRange,
-                          min: 4.0,
-                          max: 7.5,
-                          divisions: 35,
-                          labels: RangeLabels(
-                            '${_heightRange.start.toStringAsFixed(1)}\'',
-                            '${_heightRange.end.toStringAsFixed(1)}\'',
+                    _buildExpandableSection('ব্যক্তিগত', [
+                      _buildSectionTitle('উচ্চতা', fontSize: 14.sp),
+                      SizedBox(height: 8.h),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${_heightRange.start.toStringAsFixed(1)}\' ফুট',
+                            style: TextStyle(fontSize: 12.sp),
                           ),
-                          onChanged: (RangeValues values) {
-                            setState(() {
-                              _heightRange = values;
-                            });
-                          },
+                          Text(
+                            '${_heightRange.end.toStringAsFixed(1)}\' ফুট',
+                            style: TextStyle(fontSize: 12.sp),
+                          ),
+                        ],
+                      ),
+                      RangeSlider(
+                        values: _heightRange,
+                        min: 4.0,
+                        max: 7.5,
+                        divisions: 35,
+                        labels: RangeLabels(
+                          '${_heightRange.start.toStringAsFixed(1)}\'',
+                          '${_heightRange.end.toStringAsFixed(1)}\'',
                         ),
-                        SizedBox(height: 12.h),
-                        _buildSectionTitle('গাত্রবর্ণ', fontSize: 14.sp),
-                        SizedBox(height: 8.h),
-                        _buildCheckboxGroup([
-                          'কালো',
-                          'শ্যামলা',
-                          'উজ্জ্বল শ্যামলা',
-                          'ফর্সা',
-                          'উজ্জ্বল ফর্সা',
-                        ], _selectedComplexion),
-                        SizedBox(height: 12.h),
+                        onChanged: (RangeValues values) {
+                          setState(() {
+                            _heightRange = values;
+                          });
+                        },
+                      ),
+                      SizedBox(height: 12.h),
+                      _buildSectionTitle('গাত্রবর্ণ', fontSize: 14.sp),
+                      SizedBox(height: 8.h),
+                      _buildCheckboxGroup([
+                        'কালো',
+                        'শ্যামলা',
+                        'উজ্জ্বল শ্যামলা',
+                        'ফর্সা',
+                        'উজ্জ্বল ফর্সা',
+                      ], _selectedComplexion),
+                      SizedBox(height: 12.h),
+                      // Fiqh - only show for Islam
+                      if (_showIslamicOptions) ...[
                         _buildSectionTitle('ফিকহ অনুসরন', fontSize: 14.sp),
                         SizedBox(height: 8.h),
                         _buildCheckboxGroup([
@@ -607,58 +726,54 @@ class _ComprehensiveBiodataFilterDialogState
                           'হাম্বলি',
                         ], _selectedFiqh),
                       ],
-                    ),
+                    ]),
                     SizedBox(height: 16.h),
 
                     // Occupation Section
-                    _buildExpandableSection(
-                      'পেশা',
-                      [
-                        _buildCheckboxGroup([
-                          'ইমাম',
-                          'মাদ্রাসা শিক্ষক',
-                          'শিক্ষক',
-                          'ডাক্তার',
-                          'ইঞ্জিনিয়ার',
-                          'ব্যবসায়ী',
-                          'সরকারি চাকুরি',
-                          'বেসরকারি চাকুরি',
-                          'ফ্রিল্যান্সার',
-                          'শিক্ষার্থী',
-                          'প্রবাসী',
-                          'অন্যান্য',
-                          'পেশা নেই',
-                        ], _selectedOccupation),
-                      ],
-                    ),
+                    _buildExpandableSection('পেশা', [
+                      _buildCheckboxGroup([
+                        // Islamic occupations - only show for Islam or no religion selected
+                        if (_showIslamicOptions) 'ইমাম',
+                        if (_showIslamicOptions) 'মাদ্রাসা শিক্ষক',
+                        'শিক্ষক',
+                        'ডাক্তার',
+                        'ইঞ্জিনিয়ার',
+                        'ব্যবসায়ী',
+                        'সরকারি চাকুরি',
+                        'বেসরকারি চাকুরি',
+                        'ফ্রিল্যান্সার',
+                        'শিক্ষার্থী',
+                        'প্রবাসী',
+                        'অন্যান্য',
+                        'পেশা নেই',
+                      ], _selectedOccupation),
+                    ]),
                     SizedBox(height: 16.h),
 
                     // Others Section
-                    _buildExpandableSection(
-                      'অন্যান্য',
-                      [
-                        _buildSectionTitle('অর্থনৈতিক অবস্থা', fontSize: 14.sp),
-                        SizedBox(height: 8.h),
-                        _buildCheckboxGroup([
-                          'উচ্চবিত্ত',
-                          'উচ্চ মধ্যবিত্ত',
-                          'মধ্যবিত্ত',
-                          'নিম্ন মধ্যবিত্ত',
-                          'নিম্নবিত্ত',
-                        ], _selectedEconomicStatus),
-                        SizedBox(height: 12.h),
-                        _buildSectionTitle('ক্যাটাগরি', fontSize: 14.sp),
-                        SizedBox(height: 8.h),
-                        _buildCheckboxGroup([
-                          'প্রতিবন্ধী',
-                          'বন্ধ্যা',
-                          'নওমুসলিম',
-                          'এতিম',
-                          'মাসনা হতে আগ্রহী',
-                          'তাবলীগ',
-                        ], _selectedCategories),
-                      ],
-                    ),
+                    _buildExpandableSection('অন্যান্য', [
+                      _buildSectionTitle('অর্থনৈতিক অবস্থা', fontSize: 14.sp),
+                      SizedBox(height: 8.h),
+                      _buildCheckboxGroup([
+                        'উচ্চবিত্ত',
+                        'উচ্চ মধ্যবিত্ত',
+                        'মধ্যবিত্ত',
+                        'নিম্ন মধ্যবিত্ত',
+                        'নিম্নবিত্ত',
+                      ], _selectedEconomicStatus),
+                      SizedBox(height: 12.h),
+                      _buildSectionTitle('ক্যাটাগরি', fontSize: 14.sp),
+                      SizedBox(height: 8.h),
+                      _buildCheckboxGroup([
+                        'প্রতিবন্ধী',
+                        'বন্ধ্যা',
+                        // Islamic categories - only show for Islam or no religion selected
+                        if (_showIslamicOptions) 'নওমুসলিম',
+                        'এতিম',
+                        if (_showIslamicOptions) 'মাসনা হতে আগ্রহী',
+                        if (_showIslamicOptions) 'তাবলীগ',
+                      ], _selectedCategories),
+                    ]),
                   ],
                 ),
               ),
@@ -748,6 +863,112 @@ class _ComprehensiveBiodataFilterDialogState
     );
   }
 
+  // Religion chip with color coding
+  Widget _buildReligionChip(String label, String value) {
+    final isSelected = _selectedReligion == value;
+    Color chipColor;
+    switch (value) {
+      case 'islam':
+        chipColor = Colors.green;
+        break;
+      case 'hinduism':
+        chipColor = Colors.orange;
+        break;
+      case 'christianity':
+        chipColor = Colors.blue;
+        break;
+      default:
+        chipColor = Colors.grey;
+    }
+
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        setState(() {
+          if (selected) {
+            _selectedReligion = value;
+            _selectedReligiousType = null; // Reset religious type
+            // Clear Islam-specific filters when changing religion
+            if (value != 'islam') {
+              _selectedFiqh.clear();
+              _selectedDeeniEdu.clear();
+              // Remove Islamic occupation/categories from selection
+              _selectedOccupation.removeWhere(
+                (o) => o == 'ইমাম' || o == 'মাদ্রাসা শিক্ষক',
+              );
+              _selectedCategories.removeWhere(
+                (c) =>
+                    c == 'নওমুসলিম' || c == 'মাসনা হতে আগ্রহী' || c == 'তাবলীগ',
+              );
+            }
+          } else {
+            _selectedReligion = null;
+            _selectedReligiousType = null;
+          }
+        });
+      },
+      selectedColor: chipColor.withValues(alpha: 0.2),
+      checkmarkColor: chipColor,
+      backgroundColor: Colors.grey[100],
+      side: BorderSide(color: isSelected ? chipColor : Colors.grey[300]!),
+      labelStyle: TextStyle(
+        fontSize: 13.sp,
+        color: isSelected ? chipColor : Colors.grey[700],
+      ),
+    );
+  }
+
+  // Build religious type chips based on selected religion
+  List<Widget> _buildReligiousTypeChips() {
+    final chips = <Widget>[];
+
+    if (_selectedReligion == 'islam') {
+      chips.addAll([
+        _buildReligiousTypeChip('প্র্যাক্টিসিং মুসলিম', 'practicing_muslim'),
+        _buildReligiousTypeChip('সাধারণ মুসলিম', 'general_muslim'),
+      ]);
+    } else if (_selectedReligion == 'hinduism') {
+      chips.addAll([
+        _buildReligiousTypeChip('প্র্যাক্টিসিং হিন্দু', 'practicing_hindu'),
+        _buildReligiousTypeChip('সাধারণ হিন্দু', 'general_hindu'),
+      ]);
+    } else if (_selectedReligion == 'christianity') {
+      chips.addAll([
+        _buildReligiousTypeChip(
+          'প্র্যাক্টিসিং খ্রিস্টান',
+          'practicing_christian',
+        ),
+        _buildReligiousTypeChip('সাধারণ খ্রিস্টান', 'general_christian'),
+      ]);
+    }
+
+    return chips;
+  }
+
+  Widget _buildReligiousTypeChip(String label, String value) {
+    final isSelected = _selectedReligiousType == value;
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        setState(() {
+          _selectedReligiousType = selected ? value : null;
+        });
+      },
+      selectedColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+      checkmarkColor: Theme.of(context).primaryColor,
+      labelStyle: TextStyle(
+        fontSize: 13.sp,
+        color: isSelected ? Theme.of(context).primaryColor : Colors.grey[700],
+      ),
+    );
+  }
+
+  // Check if Islam-specific options should be shown
+  bool get _showIslamicOptions =>
+      _selectedReligion == null || _selectedReligion == 'islam';
+
   Widget _buildCheckboxGroup(List<String> items, Set<String> selectedSet) {
     return Wrap(
       spacing: 8.w,
@@ -770,13 +991,15 @@ class _ComprehensiveBiodataFilterDialogState
           checkmarkColor: Theme.of(context).primaryColor,
           backgroundColor: Colors.grey[100],
           side: BorderSide(
-            color: isSelected 
+            color: isSelected
                 ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
                 : Colors.grey[300]!,
           ),
           labelStyle: TextStyle(
             fontSize: 13.sp,
-            color: isSelected ? Theme.of(context).primaryColor : Colors.grey[700],
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : Colors.grey[700],
           ),
           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         );
@@ -817,10 +1040,7 @@ class _ComprehensiveBiodataFilterDialogState
       children: [
         Text(
           title,
-          style: TextStyle(
-            fontSize: 13.sp,
-            color: Colors.grey[600],
-          ),
+          style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
         ),
         SizedBox(height: 6.h),
         // Show selected items as chips
@@ -830,14 +1050,15 @@ class _ComprehensiveBiodataFilterDialogState
             runSpacing: 4.h,
             children: selectedItems.map((item) {
               return Chip(
-                label: Text(
-                  item,
-                  style: TextStyle(fontSize: 12.sp),
-                ),
+                label: Text(item, style: TextStyle(fontSize: 12.sp)),
                 deleteIcon: Icon(Icons.close, size: 16.sp),
                 onDeleted: () => onItemToggle(item, false),
-                backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                side: BorderSide(color: Theme.of(context).primaryColor.withValues(alpha: 0.3)),
+                backgroundColor: Theme.of(
+                  context,
+                ).primaryColor.withValues(alpha: 0.1),
+                side: BorderSide(
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                ),
               );
             }).toList(),
           ),
@@ -862,10 +1083,7 @@ class _ComprehensiveBiodataFilterDialogState
               children: [
                 Text(
                   selectedItems.isEmpty ? title : 'আরো যোগ করুন...',
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
                 ),
                 Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
               ],
@@ -914,7 +1132,8 @@ class _SearchableDropdownSheet extends StatefulWidget {
   });
 
   @override
-  State<_SearchableDropdownSheet> createState() => _SearchableDropdownSheetState();
+  State<_SearchableDropdownSheet> createState() =>
+      _SearchableDropdownSheetState();
 }
 
 class _SearchableDropdownSheetState extends State<_SearchableDropdownSheet> {
@@ -973,10 +1192,7 @@ class _SearchableDropdownSheetState extends State<_SearchableDropdownSheet> {
           // Title
           Text(
             widget.title,
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 12.h),
           // Search field
@@ -998,7 +1214,10 @@ class _SearchableDropdownSheetState extends State<_SearchableDropdownSheet> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.r),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12.w,
+                vertical: 12.h,
+              ),
             ),
           ),
           SizedBox(height: 12.h),
@@ -1020,14 +1239,14 @@ class _SearchableDropdownSheetState extends State<_SearchableDropdownSheet> {
                       runSpacing: 8.h,
                       children: _filteredItems.map((item) {
                         return ActionChip(
-                          label: Text(
-                            item,
-                            style: TextStyle(fontSize: 13.sp),
-                          ),
+                          label: Text(item, style: TextStyle(fontSize: 13.sp)),
                           onPressed: () => widget.onSelect(item),
                           backgroundColor: Colors.grey[100],
                           side: BorderSide(color: Colors.grey[300]!),
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 8.h,
+                          ),
                         );
                       }).toList(),
                     ),

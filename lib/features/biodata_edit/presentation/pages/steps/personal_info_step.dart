@@ -56,7 +56,6 @@ class _PersonalInfoStepState extends ConsumerState<PersonalInfoStep> {
       case Religion.christianity:
         return _buildChristianForm(model);
       case Religion.islam:
-      default:
         return _buildIslamicForm(model);
     }
   }

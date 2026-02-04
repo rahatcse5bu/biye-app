@@ -10,13 +10,9 @@ import '../../../reactions/presentation/widgets/reaction_button.dart';
 class BiodataCard extends ConsumerWidget {
   final BiodataEntity biodata;
   final VoidCallback onTap;
-  
-  const BiodataCard({
-    super.key,
-    required this.biodata,
-    required this.onTap,
-  });
-  
+
+  const BiodataCard({super.key, required this.biodata, required this.onTap});
+
   String _calculateAge(DateTime birthDate) {
     final today = DateTime.now();
     int age = today.year - birthDate.year;
@@ -26,52 +22,94 @@ class BiodataCard extends ConsumerWidget {
     }
     return age.toString();
   }
-  
+
   String _formatHeight(double height) {
     // Height is stored in feet (e.g., 5.2 means 5 feet 2 inches)
     final feet = height.floor();
     final inches = ((height - feet) * 10).round();
     return '$feet\' $inches\"';
   }
-  
+
   String _getBiodataNumber() {
     final prefix = biodata.gender == 'মহিলা' ? 'PNCF-' : 'PNCM-';
     return '$prefix${biodata.userIdNumber ?? biodata.userId}';
   }
-  
+
+  // Get religion badge info (label and color)
+  Map<String, dynamic> _getReligionBadgeInfo() {
+    final religion = biodata.religion;
+    final religiousType = biodata.religiousType;
+
+    String label = '';
+    Color bgColor;
+    Color textColor = Colors.white;
+
+    switch (religion) {
+      case 'islam':
+        label = religiousType == 'practicing_muslim'
+            ? 'প্র্যাক্টিসিং মুসলিম'
+            : 'মুসলিম';
+        bgColor = Colors.green.shade600;
+        break;
+      case 'hinduism':
+        label = religiousType == 'practicing_hindu'
+            ? 'প্র্যাক্টিসিং হিন্দু'
+            : 'হিন্দু';
+        bgColor = Colors.orange.shade600;
+        break;
+      case 'christianity':
+        label = religiousType == 'practicing_christian'
+            ? 'প্র্যাক্টিসিং খ্রিস্টান'
+            : 'খ্রিস্টান';
+        bgColor = Colors.blue.shade600;
+        break;
+      default:
+        label = '';
+        bgColor = Colors.grey;
+    }
+
+    return {'label': label, 'bgColor': bgColor, 'textColor': textColor};
+  }
+
   String _getZilla() {
     // Check biodata.zilla first
     if (biodata.zilla != null && biodata.zilla!.trim().isNotEmpty) {
       return biodata.zilla!;
     }
     // Then check address.presentZilla
-    if (biodata.address?.presentZilla != null && biodata.address!.presentZilla!.trim().isNotEmpty) {
+    if (biodata.address?.presentZilla != null &&
+        biodata.address!.presentZilla!.trim().isNotEmpty) {
       return biodata.address!.presentZilla!;
     }
     // Then check address.zilla (permanent)
-    if (biodata.address?.zilla != null && biodata.address!.zilla!.trim().isNotEmpty) {
+    if (biodata.address?.zilla != null &&
+        biodata.address!.zilla!.trim().isNotEmpty) {
       return biodata.address!.zilla!;
     }
     // Check upzilla as fallback (some data might store district here)
     if (biodata.upzilla != null && biodata.upzilla!.trim().isNotEmpty) {
       return biodata.upzilla!;
     }
-    if (biodata.address?.presentUpzilla != null && biodata.address!.presentUpzilla!.trim().isNotEmpty) {
+    if (biodata.address?.presentUpzilla != null &&
+        biodata.address!.presentUpzilla!.trim().isNotEmpty) {
       return biodata.address!.presentUpzilla!;
     }
-    if (biodata.address?.upzilla != null && biodata.address!.upzilla!.trim().isNotEmpty) {
+    if (biodata.address?.upzilla != null &&
+        biodata.address!.upzilla!.trim().isNotEmpty) {
       return biodata.address!.upzilla!;
     }
     // Check division as last resort
-    if (biodata.address?.presentDivision != null && biodata.address!.presentDivision!.trim().isNotEmpty) {
+    if (biodata.address?.presentDivision != null &&
+        biodata.address!.presentDivision!.trim().isNotEmpty) {
       return biodata.address!.presentDivision!;
     }
-    if (biodata.address?.division != null && biodata.address!.division!.trim().isNotEmpty) {
+    if (biodata.address?.division != null &&
+        biodata.address!.division!.trim().isNotEmpty) {
       return biodata.address!.division!;
     }
     return 'N/A';
   }
-  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
@@ -83,9 +121,7 @@ class BiodataCard extends ConsumerWidget {
     return Card(
       elevation: 2,
       shadowColor: Colors.black12,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -111,7 +147,10 @@ class BiodataCard extends ConsumerWidget {
                 children: [
                   // Gender Avatar and Info
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: Row(
                       children: [
                         // Avatar Circle
@@ -176,7 +215,11 @@ class BiodataCard extends ConsumerWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.visibility, size: 15, color: AppTheme.primaryColor),
+                          Icon(
+                            Icons.visibility,
+                            size: 15,
+                            color: AppTheme.primaryColor,
+                          ),
                           const SizedBox(width: 5),
                           Text(
                             '${biodata.viewsCount ?? 0}',
@@ -225,6 +268,37 @@ class BiodataCard extends ConsumerWidget {
                         ),
                       ),
                     ),
+                  // Religion Badge
+                  if (biodata.religion != null && biodata.religion!.isNotEmpty)
+                    Positioned(
+                      bottom: 8,
+                      left: 12,
+                      child: Builder(
+                        builder: (context) {
+                          final badgeInfo = _getReligionBadgeInfo();
+                          if (badgeInfo['label'].isEmpty)
+                            return const SizedBox.shrink();
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: badgeInfo['bgColor'],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              badgeInfo['label'],
+                              style: TextStyle(
+                                color: badgeInfo['textColor'],
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -238,20 +312,11 @@ class BiodataCard extends ConsumerWidget {
                     '${DateFormat('dd/MM/yyyy').format(biodata.dateOfBirth)} [${_calculateAge(biodata.dateOfBirth)}]',
                   ),
                   const SizedBox(height: 6),
-                  _buildInfoRow(
-                    'উচ্চতা',
-                    _formatHeight(biodata.height),
-                  ),
+                  _buildInfoRow('উচ্চতা', _formatHeight(biodata.height)),
                   const SizedBox(height: 6),
-                  _buildInfoRow(
-                    'গাত্রবর্ন',
-                    biodata.screenColor,
-                  ),
+                  _buildInfoRow('গাত্রবর্ন', biodata.screenColor),
                   const SizedBox(height: 6),
-                  _buildInfoRow(
-                    'জেলা',
-                    _getZilla(),
-                  ),
+                  _buildInfoRow('জেলা', _getZilla()),
                 ],
               ),
             ),
@@ -271,10 +336,7 @@ class BiodataCard extends ConsumerWidget {
                 ),
                 child: const Text(
                   'সম্পূর্ণ বায়োডাটা',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -283,7 +345,7 @@ class BiodataCard extends ConsumerWidget {
       ),
     );
   }
-  
+
   Widget _buildInfoRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
